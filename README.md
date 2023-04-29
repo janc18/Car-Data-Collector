@@ -28,3 +28,7 @@
 ## Framework that will be used
 
 All the development for this device will be build into a kernel module
+
+## Conceptual design
+
+![design](./images/Conceptual_design.png)
