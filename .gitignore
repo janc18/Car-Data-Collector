@@ -1,1 +1,4 @@
 **arm-kernel
+**compile_commands.json
+**output/
+**.cache/
