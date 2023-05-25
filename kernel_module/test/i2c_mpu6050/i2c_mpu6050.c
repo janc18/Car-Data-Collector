@@ -28,6 +28,7 @@ MODULE_DESCRIPTION("A test driver for reading out a MPU6050");
 const u8 PWR_MGMT_1 = 0x6B;
 const u8 GYRO_CONFIG = 0x1B;
 const u8 ACCEL_CONFIG = 0x1C;
+const u8 CONFIG=0x1A;
 //---------------
 
 // Config registers
@@ -35,7 +36,10 @@ const u8 CLKSEL = 0x01;
 const u8 FS_SEL = 0x00;
 const u8 AFS_SEL = 0x00;
 const u8 SLEEP = 0x00;
+const u8 DLPF_CFG=0x06;
 //-------------
+
+// MPU6050 gyroscope and acelerometer registers
 
 char *values_format = NULL;
 
@@ -68,10 +72,10 @@ u8 get_whoam(void) {
 
 void config_mpu6050(void) {
   // Config power management
-  i2c_smbus_write_byte_data(mpu6050_i2c_client, PWR_MGMT_1,
-                            CLKSEL << 2 | SLEEP << 6);
+  i2c_smbus_write_byte_data(mpu6050_i2c_client, PWR_MGMT_1,CLKSEL << 2 | SLEEP << 6);
   i2c_smbus_write_byte_data(mpu6050_i2c_client, GYRO_CONFIG, FS_SEL << 3);
   i2c_smbus_write_byte_data(mpu6050_i2c_client, ACCEL_CONFIG, AFS_SEL << 2);
+  i2c_smbus_write_byte_data(mpu6050_i2c_client, CONFIG,DLPF_CFG);
 }
 
 char *read_accel_raw_values(char *word) {
@@ -79,37 +83,37 @@ char *read_accel_raw_values(char *word) {
   return word;
 }
 
-/*
- *
-  unsigned long long int retorno = 0;
-  unsigned short int X1 =lol[0]<<8|lol[1];
-  unsigned short int Y1=lol[2]<<8|lol[3];
-  unsigned short int Z1 =lol[4]<<8|lol[5];
-  retorno = ((unsigned long)X1<<32)|((unsigned long)Y1<<16)|Z1;
-s64 read_accel_raw_values(void){
-  for (u8 j=0;j<10;j++){
-          u8 accel_values=[10]={0};
-          u8 index=1;
-          for(u8 i=ACCEL_XOUT_H;i<=64;i++){
-                  accel_values[index]=i2c_smbus_read_byte_data(mpu6050_i2c_client,i);
-          }
+char *test_read_accel_raw_values(char *word) {
+  u16 ACCEL_X =0;
+  u16 ACCEL_Y = 0;
+  u16 ACCEL_Z = 0;
+  u16 GYRO_X = 0;
+  u16 GYRO_Y = 0;
+  u16 GYRO_Z = 0;
+  ACCEL_X= i2c_smbus_read_word_data(mpu6050_i2c_client,59);
+  ACCEL_Y= i2c_smbus_read_word_data(mpu6050_i2c_client,61);
+  ACCEL_Z= i2c_smbus_read_word_data(mpu6050_i2c_client,63);
+  GYRO_X = i2c_smbus_read_word_data(mpu6050_i2c_client, 67);
+  GYRO_Y = i2c_smbus_read_word_data(mpu6050_i2c_client, 69);
+  GYRO_Z = i2c_smbus_read_word_data(mpu6050_i2c_client, 71);
+
+
+  snprintf(word, 80, "%d|%d|%d|%d|%d|%d", ACCEL_X, ACCEL_Y, ACCEL_Z, GYRO_X,
+           GYRO_Y, GYRO_Z);
+  return word;
 }
-return 10;
-}
-*/
+
 static ssize_t driver_read(struct file *file, char __user *user_buffer,
                            size_t count, loff_t *offs) {
   int to_copy, not_copied, delta;
-  char out_string[10];
-  u8 register_value;
-
+  char out_string[60];
+  u8 registerm = 0;
   if (*offs >= sizeof(out_string))
     return 0;
-
-  register_value = get_whoam();
-
-  snprintf(out_string, sizeof(out_string), "%d\n", register_value);
-
+  registerm = get_whoam();
+  test_read_accel_raw_values(values_format);
+  //  snprintf(out_string, sizeof(out_string), "%d\n", registerm);
+  snprintf(out_string, sizeof(out_string), "%s\n", values_format);
   to_copy = min_t(int, strlen(out_string) - *offs, count);
   if (to_copy <= 0)
     return 0;
@@ -131,26 +135,25 @@ static int __init ModuleInit(void) {
 
   int ret = -1;
   int id;
-  values_format = vmalloc(30);
-  printk("My device Driver - hello kernel\n");
+  values_format = vmalloc(100);
 
   if (alloc_chrdev_region(&myDeviceNr, 0, 1, DRIVER_NAME) < 0) {
-    printk("Device NR,could not be allocater\n");
+    printk("MPU6050: Device NR,could not be allocater\n");
   }
-  printk("My device driver -device NR %d was register\n", myDeviceNr);
+  printk("MPU6050: My device driver -device NR %d was register\n", myDeviceNr);
   if ((myClass = class_create(THIS_MODULE, DRIVER_CLASS)) == NULL) {
-    printk("Device class cannot be created\n");
+    printk("MPU6050: Device class cannot be created\n");
     goto ClassError;
   }
 
   if (device_create(myClass, NULL, myDeviceNr, NULL, DRIVER_NAME) == NULL) {
-    printk("cannot create device file\n");
+    printk("MPU6050: canot create device file\n");
     goto FileError;
   }
   cdev_init(&myDevice, &fops);
 
   if (cdev_add(&myDevice, myDeviceNr, 1) == -1) {
-    printk("Register of device to kernel failed\n");
+    printk("MPU6050: Register of device to kernel failed\n");
     goto KernelError;
   }
   mpu6050_i2c_adapter = i2c_get_adapter(I2C_BUS_AVAILABLE);
@@ -161,18 +164,18 @@ static int __init ModuleInit(void) {
       if (i2c_add_driver(&mpu6050_driver) != -1) {
         ret = 0;
       } else
-        printk("cannot add driver\n");
+        printk("MPU6050: cannot add driver\n");
     }
     i2c_put_adapter(mpu6050_i2c_adapter);
   }
-  printk("MPU Driver added!!!\n");
+  printk("MPU6050: MPU Driver added!!!\n");
   id = i2c_smbus_read_byte_data(mpu6050_i2c_client, 0x75);
   if (id == 0x68) {
-    printk("Mpu6050 found -- Initializing configuration \n");
+    printk("MPU6050: Mpu6050 found -- Initializing configuration \n");
     config_mpu6050();
-    printk("string value : %s", read_accel_raw_values(values_format));
+    printk("string value: %s", read_accel_raw_values(values_format));
   } else {
-    printk("Mpu6050 not found");
+    printk("MPU6050: Mpu6050 not found");
   }
 
   return ret;
@@ -186,7 +189,7 @@ ClassError:
 }
 
 static void __exit ModuleExit(void) {
-  printk("mpu6050 dismonted\n");
+  printk("MPU6050: Mpu6050 dismonted\n");
   i2c_unregister_device(mpu6050_i2c_client);
   i2c_del_driver(&mpu6050_driver);
   cdev_del(&myDevice);
