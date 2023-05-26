@@ -1,17 +1,21 @@
 #include <linux/cdev.h>
+#include <linux/delay.h>
 #include <linux/device.h>
 #include <linux/fs.h>
 #include <linux/i2c.h>
 #include <linux/init.h>
 #include <linux/kernel.h>
+#include <linux/kthread.h>
 #include <linux/module.h>
+#include <linux/sched.h>
 #include <linux/slab.h>
 #include <linux/uaccess.h>
 #include <linux/version.h>
+
 MODULE_LICENSE("GPL");
 #define DRIVER_NAME "mpu6050"
 #define DRIVER_CLASS "mpu6050Class"
-
+#define TIMEOUT 5000 // milliseconds
 static struct i2c_adapter *mpu6050_i2c_adapter = NULL;
 static struct i2c_client *mpu6050_i2c_client = NULL;
 
@@ -28,7 +32,7 @@ MODULE_DESCRIPTION("A test driver for reading out a MPU6050");
 const u8 PWR_MGMT_1 = 0x6B;
 const u8 GYRO_CONFIG = 0x1B;
 const u8 ACCEL_CONFIG = 0x1C;
-const u8 CONFIG=0x1A;
+const u8 CONFIG = 0x1A;
 //---------------
 
 // Config registers
@@ -36,12 +40,42 @@ const u8 CLKSEL = 0x01;
 const u8 FS_SEL = 0x00;
 const u8 AFS_SEL = 0x00;
 const u8 SLEEP = 0x00;
-const u8 DLPF_CFG=0x06;
+const u8 DLPF_CFG = 0x06;
 //-------------
+
+static char *values_format = NULL;
+
+// kthread
+static struct task_struct *read_thread;
+
+//--
 
 // MPU6050 gyroscope and acelerometer registers
 
-char *values_format = NULL;
+// Fuction Prototypes
+
+int read_accel_raw_values(void *pv) {
+  while (!kthread_should_stop()) {
+    u16 ACCEL_X = 0;
+    u16 ACCEL_Y = 0;
+    u16 ACCEL_Z = 0;
+    u16 GYRO_X = 0;
+    u16 GYRO_Y = 0;
+    u16 GYRO_Z = 0;
+    ACCEL_X = i2c_smbus_read_word_data(mpu6050_i2c_client, 59);
+    ACCEL_Y = i2c_smbus_read_word_data(mpu6050_i2c_client, 61);
+    ACCEL_Z = i2c_smbus_read_word_data(mpu6050_i2c_client, 63);
+    GYRO_X = i2c_smbus_read_word_data(mpu6050_i2c_client, 67);
+    GYRO_Y = i2c_smbus_read_word_data(mpu6050_i2c_client, 69);
+    GYRO_Z = i2c_smbus_read_word_data(mpu6050_i2c_client, 71);
+
+    snprintf(values_format, 80, "%d|%d|%d|%d|%d|%d", ACCEL_X, ACCEL_Y, ACCEL_Z,
+             GYRO_X, GYRO_Y, GYRO_Z);
+    msleep(1000);
+  }
+  return 0;
+}
+//-------
 
 static const struct i2c_device_id mpu6050_id[] = {{SLAVE_DEVICE_NAME, 0}, {}};
 static struct i2c_driver mpu6050_driver = { // it have const before
@@ -71,48 +105,21 @@ u8 get_whoam(void) {
 }
 
 void config_mpu6050(void) {
-  // Config power management
-  i2c_smbus_write_byte_data(mpu6050_i2c_client, PWR_MGMT_1,CLKSEL << 2 | SLEEP << 6);
+  i2c_smbus_write_byte_data(mpu6050_i2c_client, PWR_MGMT_1,
+                            CLKSEL << 2 | SLEEP << 6);
   i2c_smbus_write_byte_data(mpu6050_i2c_client, GYRO_CONFIG, FS_SEL << 3);
   i2c_smbus_write_byte_data(mpu6050_i2c_client, ACCEL_CONFIG, AFS_SEL << 2);
-  i2c_smbus_write_byte_data(mpu6050_i2c_client, CONFIG,DLPF_CFG);
-}
-
-char *read_accel_raw_values(char *word) {
-  strcpy(word, "564564");
-  return word;
-}
-
-char *test_read_accel_raw_values(char *word) {
-  u16 ACCEL_X =0;
-  u16 ACCEL_Y = 0;
-  u16 ACCEL_Z = 0;
-  u16 GYRO_X = 0;
-  u16 GYRO_Y = 0;
-  u16 GYRO_Z = 0;
-  ACCEL_X= i2c_smbus_read_word_data(mpu6050_i2c_client,59);
-  ACCEL_Y= i2c_smbus_read_word_data(mpu6050_i2c_client,61);
-  ACCEL_Z= i2c_smbus_read_word_data(mpu6050_i2c_client,63);
-  GYRO_X = i2c_smbus_read_word_data(mpu6050_i2c_client, 67);
-  GYRO_Y = i2c_smbus_read_word_data(mpu6050_i2c_client, 69);
-  GYRO_Z = i2c_smbus_read_word_data(mpu6050_i2c_client, 71);
-
-
-  snprintf(word, 80, "%d|%d|%d|%d|%d|%d", ACCEL_X, ACCEL_Y, ACCEL_Z, GYRO_X,
-           GYRO_Y, GYRO_Z);
-  return word;
+  i2c_smbus_write_byte_data(mpu6050_i2c_client, CONFIG, DLPF_CFG);
 }
 
 static ssize_t driver_read(struct file *file, char __user *user_buffer,
                            size_t count, loff_t *offs) {
   int to_copy, not_copied, delta;
   char out_string[60];
-  u8 registerm = 0;
+
   if (*offs >= sizeof(out_string))
     return 0;
-  registerm = get_whoam();
-  test_read_accel_raw_values(values_format);
-  //  snprintf(out_string, sizeof(out_string), "%d\n", registerm);
+
   snprintf(out_string, sizeof(out_string), "%s\n", values_format);
   to_copy = min_t(int, strlen(out_string) - *offs, count);
   if (to_copy <= 0)
@@ -173,11 +180,17 @@ static int __init ModuleInit(void) {
   if (id == 0x68) {
     printk("MPU6050: Mpu6050 found -- Initializing configuration \n");
     config_mpu6050();
-    printk("string value: %s", read_accel_raw_values(values_format));
   } else {
     printk("MPU6050: Mpu6050 not found");
   }
-
+  read_thread =
+      kthread_create(read_accel_raw_values, NULL, "raw values mpu read");
+  if (read_thread) {
+    wake_up_process(read_thread);
+  } else {
+    pr_err("MPU6050: cannot create driver");
+    goto KernelError;
+  }
   return ret;
 KernelError:
   device_destroy(myClass, myDeviceNr);
@@ -197,6 +210,7 @@ static void __exit ModuleExit(void) {
   class_destroy(myClass);
   unregister_chrdev_region(myDeviceNr, 1);
   vfree(values_format);
+  kthread_stop(read_thread);
 }
 module_init(ModuleInit);
 module_exit(ModuleExit);
