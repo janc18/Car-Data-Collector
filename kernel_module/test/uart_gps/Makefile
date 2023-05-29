@@ -1,11 +1,15 @@
+obj-m += gps.o
 
-OUTPUT_DIR := output
-obj-m += gps_uart 
+all: module dt
+	echo Bulded Device Tree Overlay and kernel module
 
-KDIR := ../arm-kernel/linux/
+module:
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 
-all:
-	make -C $(KDIR) M=$(PWD) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- modules
- 
+dt :serdev_overlay.dts
+	dtc -@ -I dts -O dtb -o serdev_overlay.dtbo serdev_overlay.dts
+
 clean:
-	make -C $(KDIR) M=$(PWD) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- clean
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+
+
