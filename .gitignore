@@ -1,5 +1,15 @@
+
 **arm-kernel
+
 **compile_commands.json
+
 **output/
+
 **.cache/
+
+
+#kernel module output files
+**.ko
+**.mod*
+**.o
 **.cmd
