@@ -7,6 +7,11 @@
 
 **.cache/
 
+**.env
+
+**config.json
+
+**remote_dir
 
 #kernel module output files
 **.ko
