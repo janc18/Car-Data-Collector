@@ -50,10 +50,6 @@ static struct task_struct *read_thread;
 
 //--
 
-// MPU6050 gyroscope and acelerometer registers
-
-// Fuction Prototypes
-
 int read_accel_raw_values(void *pv) {
   while (!kthread_should_stop()) {
     u16 ACCEL_X = 0;
@@ -62,7 +58,8 @@ int read_accel_raw_values(void *pv) {
     u16 GYRO_X = 0;
     u16 GYRO_Y = 0;
     u16 GYRO_Z = 0;
-    ACCEL_X = i2c_smbus_read_word_data(mpu6050_i2c_client, 59);
+    ACCEL_X = i2c_smbus_read_word_data(mpu6050_i2c_client,
+                                       59); // TODO: implement a for loop
     ACCEL_Y = i2c_smbus_read_word_data(mpu6050_i2c_client, 61);
     ACCEL_Z = i2c_smbus_read_word_data(mpu6050_i2c_client, 63);
     GYRO_X = i2c_smbus_read_word_data(mpu6050_i2c_client, 67);
@@ -75,7 +72,6 @@ int read_accel_raw_values(void *pv) {
   }
   return 0;
 }
-//-------
 
 static const struct i2c_device_id mpu6050_id[] = {{SLAVE_DEVICE_NAME, 0}, {}};
 static struct i2c_driver mpu6050_driver = { // it have const before
