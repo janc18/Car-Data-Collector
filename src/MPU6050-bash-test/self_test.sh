@@ -1,12 +1,26 @@
 #!/bin/bash
-
+i2cPackage="i2c-tools"
 BGreen='\033[1;32m'
 BRed='\033[1;31m'
 NC='\033[0m' # No Color
 
-#To check if the mpu6050 is connected, it can be done with the next steps
-#1. Read the 0x75(WHO_AM_I) register with 0x68 chip address
-#2. Compare to 0x68 because this is the chip address
+# To run this script it needed the "i2c-tools" package
+# It can be downloaded with the following command:
+# sudo apt install i2c-tools
+# or
+# download the package automatically
+
+if [ $(dpkg-query -W -f='${Status}' $i2cPackage 2>/dev/null | grep -c "ok installed") -eq 0 ];
+then
+  	read -p "i2c-tools don't found, You want to install? (Y/N): " confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] || exit 1
+	sudo apt install $i2cPackage;
+fi
+
+
+# To check if the mpu6050 is connected, it can be done with the next steps
+# 1. Read the 0x75(WHO_AM_I) register with 0x68 chip address
+# 2. Compare to 0x68 because this is the chip address
+
 
 echo "Searching MPU6050 at 0x68 address"
 value_at_0x75=`i2cget -y 1 0x68 0x75`
