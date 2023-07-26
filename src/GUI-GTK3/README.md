@@ -40,3 +40,10 @@ In the folder build, after the execution of the commands shown before, run:
 ```sh
 sudo startx ./CarDataCollector 
 ```
+
+## First GUI version
+
+This version will just contain the following elements:
+
+- 3 Level bar indicator to view in graphical way the data
+- 3 Labels with raw values for each axis
