@@ -15,17 +15,13 @@
 typedef struct Device {
   int fd;
   char path[50];
-  bool isHID;
   bool found;
   guint32 version;
   guint8 axis;
-  guint8 buttons;
 } Device;
 
-int typeDevice(int fd, char name[60], Device *mpu, bool isHID);
-int searchHIDDevice(Device *mpu, bool DeviceType);
+int searchMpu6050Device(Device *mpu);
 void showDevInfo(Device *mpu);
-int searchDevice(gpointer data);
 
 #endif
 // #pragma once

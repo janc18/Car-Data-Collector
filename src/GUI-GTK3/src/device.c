@@ -19,7 +19,6 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <linux/hidraw.h>
-#include <linux/joystick.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -28,74 +27,44 @@
 /**
  * @brief Name of the device to search
  */
-const char nameCAE[] = "CAR Steering Wheel";
+const char mpu[] = "mpu6050";
+
 /**
- * @brief Maximum number of times to search for the device
+ * @brief Device path
  */
-int MAXDEVICES = 10;
-/**
- * @brief HID path
- */
-const char pathHID[] = "/dev/hidraw";
-/**
- * @brief Joystick path
- */
-const char pathJoystick[] = "/dev/input/js";
+const char DevicePath[] = "/dev/mpu6050";
 
 struct udev_source *source;
 
 void updateAxisBar(ObjectsUI *UI, guint8 number, guint16 value);
 
 /**
- * @brief Search for an HID and Joystick device.
+ * @brief Search for an mpu6050 device.
  *
- * Search through HID and Joystick @ref MAXDEVICES times.
+ * Look on the next path
+ * - /dev/mpu6050
  *
- * Look on the next paths
- * - /dev/hidraw/
- * - /dev/input/
- *
- * And compare the name's file descriptor with @ref nameCAE
+ * And compare the name's file descriptor with mpu6050
  *
  * @param *Device Struct with all the Device data
- * @param bool Device type to search, TRUE for HID and FALSE for Joystick
  * @return
  * - 1 Device found
  * - -1 No device found
  */
-int searchHIDDevice(Device *mpu, bool DeviceType) {
+int searchMpu6050Device(Device *mpu) {
   memset(mpu->path, 0, sizeof(mpu->path));
   char buffer[256];
   char path[50];
   int fd, i;
-  if (DeviceType) {
-    g_printerr("Searching for HID Device\n");
-    strcpy(path, pathHID);
+  g_printerr("Searching for Device\n");
+  fd = open(DevicePath, O_RDWR);
+  if (fd > 0) {
+    close(fd);
+    return 1;
   } else {
-    g_printerr("Searching for Joystick Device\n");
-    strcpy(path, pathJoystick);
-  }
-  for (i = 0; i <= MAXDEVICES; i++) {
-    g_snprintf(buffer, sizeof(buffer), "%s%d", path, i);
-    g_printerr("%s\n", buffer);
-    fd = open(buffer, O_RDWR);
-    if (fd > 0) {
-      g_printerr("Found a device on %s\n", buffer);
-      g_printerr("Comparing device name...\n");
-      strcpy(mpu->path, buffer);
-      if (typeDevice(fd, buffer, mpu, DeviceType) == 1) {
-        break;
-        return 1;
-      }
-    }
-  }
-  if (fd < 0) {
-    g_printerr("No device found.\n");
+    close(fd);
     return -1;
   }
-
-  close(fd);
-  return 0;
 }
 
 static gboolean CaptureEvent(gpointer data) {
@@ -127,48 +96,6 @@ static gboolean CaptureEvent(gpointer data) {
   }
   return TRUE;
 }
-
-/**
- * @brief Compare name's device to @ref nameCAE
- * @param fd int value of file descriptor
- * @param name char value with the path's decice
- * @param Device* Struct with all the Device data
- * @param isHID bool search for HID or Joystick device
- * - TRUE HID
- * - FALSE Joystick
- * @return
- * - 1 Device's name equal to @ref nameCAE
- * - -1 Device's name not equal to @ref nameCAE
- */
-int typeDevice(int fd, char name[256], Device *mpu, bool isHID) {
-
-  if (isHID == false) {
-    ioctl(fd, JSIOCGNAME(60), name);  // get the joystick name
-    if (strcmp(name, nameCAE) == 0) { // compare name
-      g_printerr("Found joystick %s device \n", nameCAE);
-      mpu->fd = fd;
-      ioctl(fd, JSIOCGAXES, &mpu->axis);
-      ioctl(fd, JSIOCGBUTTONS, &mpu->buttons);
-      ioctl(fd, JSIOCGVERSION, &mpu->version);
-      return 1;
-    } else {
-      g_printerr("Isn't %s device \n", nameCAE);
-      return -1;
-    }
-  } else {
-    ioctl(fd, HIDIOCGRAWNAME(256), name); // get the HID name
-    g_printerr("name :%s\n", name);
-    if (strcmp(name, nameCAE) == 0) { // compare name
-      g_printerr("Found HID device\n");
-      mpu->fd = fd;
-      return 1;
-    } else {
-      g_printerr("Isn't %s device \n", nameCAE);
-      return -1;
-    }
-  }
-}
-
 /**
  *@brief Print on terminal Device's information
  *
@@ -187,33 +114,9 @@ void showDevInfo(Device *mpu) {
   g_printerr("\n-----------------\n");
   g_printerr("File Descriptor %d \n", mpu->fd);
   g_printerr("Device Version %d \n", mpu->version);
-  g_printerr("Axis %u \n", mpu->axis);
-  g_printerr("Buttons %u \n", mpu->buttons);
-  g_printerr("Path %s \n", mpu->path);
   g_printerr("-------------------\n");
 }
 
-/**
- *@brief Show the status connection in the GUI
- *@param *Device Struct with all the Device data
- *@param *ObjectsUI Struct with all the UI's components
- */
-void showStatusConnection(Device *mpu, ObjectsUI *UI) {
-  if (mpu->found) {
-    if (mpu->isHID) {
-
-      // gtk_label_set_text(GTK_LABEL(UI->text_status), "Conectado (HID)");
-      // gtk_image_set_from_file(GTK_IMAGE(UI->visual_status), "../src_images/green.png");
-    } else {
-      // gtk_label_set_text(GTK_LABEL(UI->text_status), "Conectado (Joystick)");
-      // gtk_image_set_from_file(GTK_IMAGE(UI->visual_status), "../src_images/green.png");
-    }
-  } else {
-
-    // gtk_label_set_text(GTK_LABEL(UI->text_status), "Desconectado");
-    // gtk_image_set_from_file(GTK_IMAGE(UI->visual_status), "../src_images/red.png");
-  }
-}
 struct udev_source {
   GSource base;
   gpointer tag;
@@ -247,13 +150,10 @@ GSourceFuncs udev_source_funcs = {
     .check = udev_source_check,
     .dispatch = udev_source_dispatch,
 };
-//
 
 void configGSource(Device *mpu, CARApp *app) {
 
   source = (struct udev_source *)g_source_new(&udev_source_funcs, sizeof(*source));
-  // struct udev_source *source;
-  // source = (struct udev_source *)g_source_new(&udev_source_funcs, sizeof(*source));
   g_source_set_callback(&source->base, CaptureEvent, app, NULL); /* destroy_notify */
   source->tag = g_source_add_unix_fd(&source->base, mpu->fd, G_IO_IN | G_IO_HUP);
   g_source_attach(&source->base, g_main_context_default());
@@ -261,52 +161,13 @@ void configGSource(Device *mpu, CARApp *app) {
 }
 
 /**
- *@brief Search for any type of device, it can be HID or Joystick
- *@param gpointer Reference to CARApp
- *
- *@return
- * - 1 Joystick device found
- * - 2 HID device found
- * - 3 Device is already connected
- * - -1 No device found
- */
-int searchDevice(gpointer data) {
-  CARApp *app = G_POINTER_TO_CAR_APP(data);
-  ObjectsUI *UI = car_app_get_gui(app);
-  Device *mpu = CAR_APP(app)->priv->device;
-  g_printerr("valor de encotrado?:%s\n", mpu->found ? "true" : "false");
-  if (mpu->found == FALSE) {
-    if (searchHIDDevice(mpu, false) >= 0) { // Searching for a Joystick device
-      g_printerr("Monitoring Joystick device\n");
-      mpu->found = TRUE;
-      mpu->isHID = FALSE;
-      showStatusConnection(mpu, UI);
-      configGSource(mpu, app);
-      return 1;
-    }
-    if (searchHIDDevice(mpu, true) >= 0) { // Searching for a HID device
-      g_printerr("Monitoring HID device\n");
-      mpu->isHID = TRUE;
-      mpu->found = TRUE;
-      showStatusConnection(mpu, UI);
-      return 2;
-    }
-    showStatusConnection(mpu, UI);
-    g_printerr("I can't find the Device\n");
-    return -1;
-  } else {
-    g_printerr("The device is already connected\n");
-    return 3;
-  }
-}
-/**
  *@brief Update the steering wheel rotation
  *@param *ObjectsUI Struct with all the UI's components
  *@param guint16 Value of rotation
  *@todo Add implicity formula
  */
 void updateSteeringWheel(ObjectsUI *UI, guint16 value) {
-  UI->rotation = (value / 32000.0) * 8;
+  // UI->rotation = (value / 32000.0) * 8;
   // gtk_widget_queue_draw(UI->swa);
 }
 /**

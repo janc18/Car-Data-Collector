@@ -11,21 +11,13 @@
 typedef struct _ObjectsUI ObjectsUI;
 
 struct _ObjectsUI {
-  GtkWidget *ventana;
-  GtkWidget *visual_status;
-  GtkWidget *text_status;
-  GtkWidget *boton;
-  GtkWidget *etiqueta;
-  GtkWidget *barra_acelerador;
-  GtkWidget *barra_freno;
-  GtkWidget *barra_clutch;
-  GtkWidget *output;
-  GtkWidget *swa; // sterring wheel animation
-  gdouble rotation;
-  GtkWidget *reconectar;
-  GtkWidget *search_updates; // button
-  GtkWidget *tv_updatelog;
-  GdkPixbuf *pixbuf;
+  GtkWidget *Window;
+  GtkWidget *RollLevelBar;
+  GtkWidget *RollText;
+  GtkWidget *PitchLevelBar;
+  GtkWidget *PitchText;
+  GtkWidget *YawLevelBar;
+  GtkWidget *YawText;
 };
 
 typedef struct _CARAppPrivate CARAppPrivate;

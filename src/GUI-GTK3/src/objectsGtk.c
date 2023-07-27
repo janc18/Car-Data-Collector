@@ -69,18 +69,13 @@ ObjectsUI *buildObjects(GtkApplication *app) {
   g_printerr("UI %p \n", obj);
 #endif
 
-  // obj->boton = GTK_WIDGET(gtk_builder_get_object(constructor, "boton_test"));
-  obj->ventana = GTK_WIDGET(gtk_builder_get_object(constructor, "ventana"));
-  // obj->barra_acelerador = GTK_WIDGET(gtk_builder_get_object(constructor, "valor_acelerador"));
-  // obj->barra_freno = GTK_WIDGET(gtk_builder_get_object(constructor, "valor_freno"));
-  // obj->barra_clutch = GTK_WIDGET(gtk_builder_get_object(constructor, "valor_clutch"));
-  // obj->output = GTK_WIDGET(gtk_builder_get_object(constructor, "salida"));
-  // obj->reconectar = GTK_WIDGET(gtk_builder_get_object(constructor, "reconnect"));
-  // obj->visual_status = GTK_WIDGET(gtk_builder_get_object(constructor, "visual_status"));
-  // obj->text_status = GTK_WIDGET(gtk_builder_get_object(constructor, "text_status"));
-  // obj->swa = GTK_WIDGET(gtk_builder_get_object(constructor, "swa"));
-  // obj->search_updates = GTK_WIDGET(gtk_builder_get_object(constructor, "actualizar"));
-  // obj->tv_updatelog = GTK_WIDGET(gtk_builder_get_object(constructor, "tv_updatelog"));
+  obj->Window = GTK_WIDGET(gtk_builder_get_object(constructor, "Window"));
+  obj->RollLevelBar = GTK_WIDGET(gtk_builder_get_object(constructor, "LevelBarAxis0"));
+  obj->RollText = GTK_WIDGET(gtk_builder_get_object(constructor, "Axis0"));
+  obj->PitchLevelBar = GTK_WIDGET(gtk_builder_get_object(constructor, "LevelBarAxis1"));
+  obj->PitchText = GTK_WIDGET(gtk_builder_get_object(constructor, "Axis1"));
+  obj->YawLevelBar = GTK_WIDGET(gtk_builder_get_object(constructor, "LevelBarAxis2"));
+  obj->YawText = GTK_WIDGET(gtk_builder_get_object(constructor, "Axis2"));
   return obj;
   g_object_unref(G_OBJECT(constructor));
 }
@@ -113,8 +108,6 @@ void freeElements(gpointer data) {
  * @param CARApp
  */
 void signalsConnection(ObjectsUI *obj, CARApp *app) {
-  // g_signal_connect_swapped(obj->reconectar, "clicked", G_CALLBACK(searchDevice), app);
-  g_signal_connect_swapped(obj->ventana, "destroy", G_CALLBACK(freeElements), app);
-  g_printerr("%p", &obj->ventana);
+  g_signal_connect_swapped(obj->Window, "destroy", G_CALLBACK(freeElements), app);
   // g_signal_connect(G_OBJECT(obj->swa), "draw", G_CALLBACK(on_draw), app);
 }
