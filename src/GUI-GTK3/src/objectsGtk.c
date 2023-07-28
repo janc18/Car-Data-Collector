@@ -36,26 +36,7 @@ void start_gui(void) {
   g_object_unref(G_OBJECT(constructor));
   gtk_main();
 }
-/**
- * @brief Draw steering wheel
- * @param GtkWidget widget to draw
- * @param cairo_t
- * @gpointer pointer with CARApp
- */
-/*static gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
 
-  CARApp *app = G_POINTER_TO_CAR_APP(data);
-  ObjectsUI *UI = car_app_get_gui(app);
-  cairo_save(cr);
-  cairo_translate(cr, gtk_widget_get_allocated_width(widget) / 2.0, gtk_widget_get_allocated_height(widget) / 2.0);
-
-  cairo_rotate(cr, UI->rotation);
-  gdk_cairo_set_source_pixbuf(cr, UI->pixbuf, -gdk_pixbuf_get_width(UI->pixbuf) / 2.0, -gdk_pixbuf_get_height(UI->pixbuf) / 2.0);
-  cairo_paint(cr);
-  cairo_restore(cr);
-
-  return TRUE;
-}*/
 /**
  * @brief Build all GUI objects
  * @param GtkApplication pointer with
@@ -89,14 +70,13 @@ ObjectsUI *buildObjects(GtkApplication *app) {
 void freeElements(gpointer data) {
   CARApp *app = G_POINTER_TO_CAR_APP(data);
   ObjectsUI *UI = car_app_get_gui(app);
-  Device *cae = CAR_APP(app)->priv->device;
+  Device *car = CAR_APP(app)->priv->device;
 
 #ifdef DEBUG
   g_printerr("%p UI\n", UI);
-  g_printerr("%p device\n", cae);
+  g_printerr("%p device\n", car);
 #endif
-
-  g_free(cae);
+  g_free(car);
   g_free(UI);
   gtk_main_quit();
 }
@@ -107,7 +87,4 @@ void freeElements(gpointer data) {
  * @param ObjectsUI struct with all the GtkWidget elements
  * @param CARApp
  */
-void signalsConnection(ObjectsUI *obj, CARApp *app) {
-  g_signal_connect_swapped(obj->Window, "destroy", G_CALLBACK(freeElements), app);
-  // g_signal_connect(G_OBJECT(obj->swa), "draw", G_CALLBACK(on_draw), app);
-}
+void signalsConnection(ObjectsUI *obj, CARApp *app) { g_signal_connect_swapped(obj->Window, "destroy", G_CALLBACK(freeElements), app); }
