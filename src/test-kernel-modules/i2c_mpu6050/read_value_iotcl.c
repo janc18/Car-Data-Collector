@@ -1,13 +1,13 @@
-/***************************************************************************/ /**
-                                                                               *  \file       test_app.c
-                                                                               *
-                                                                               *  \details    Userspace application to test the Device driver
-                                                                               *
-                                                                               *  \author     EmbeTronicX
-                                                                               *
-                                                                               *  \Tested with Linux raspberrypi 5.10.27-v7l-embetronicx-custom+
-                                                                               *  \Tested with Linux raspberrypi 5.15.84+
-                                                                               *******************************************************************************/
+/**
+ *  \file       test_app.c
+ *
+ *  \details    Userspace application to test the Device driver
+ *
+ *  \author     EmbeTronicX
+ *
+ *  \Tested with Linux raspberrypi 5.10.27-v7l-embetronicx-custom+
+ *  \Tested with Linux raspberrypi 5.15.84+
+ *******************************************************************************/
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
