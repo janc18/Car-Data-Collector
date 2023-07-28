@@ -24,6 +24,8 @@
 #define AY _IOR('a', 'e', int16_t *)
 #define AZ _IOR('a', 'f', int16_t *)
 
+char RegistersNames[][6] = {"GX", "GY", "GZ", "AX", "AY", "AZ"};
+
 unsigned int ks[6] = {GX, GY, GZ, AX, AY, AZ};
 
 int fd;
@@ -38,9 +40,10 @@ int main() {
 
   for (int i = 0; i < 6; i++) {
     ioctl(fd, ks[i], (int32_t *)&value);
-    printf("Value %d is %d\n", i, value);
+    printf("Value of %s is %d\n", RegistersNames[i], value);
     usleep(18000);
   }
+
   printf("Closing Driver\n");
   close(fd);
 }
