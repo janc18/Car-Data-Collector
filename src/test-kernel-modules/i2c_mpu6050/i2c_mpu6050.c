@@ -4,6 +4,7 @@
 #include <linux/fs.h>
 #include <linux/i2c.h>
 #include <linux/init.h>
+#include <linux/ioctl.h>
 #include <linux/kernel.h>
 #include <linux/kthread.h>
 #include <linux/module.h>
@@ -11,7 +12,6 @@
 #include <linux/slab.h>
 #include <linux/uaccess.h>
 #include <linux/version.h>
-
 MODULE_LICENSE("GPL");
 #define DRIVER_NAME "mpu6050"
 #define DRIVER_CLASS "mpu6050Class"
@@ -21,14 +21,20 @@ static struct i2c_client *mpu6050_i2c_client = NULL;
 
 MODULE_AUTHOR("Jose Agustin");
 MODULE_DESCRIPTION("A test driver for reading out a MPU6050");
-// MODULE_SUPPORTED_DEVICE("NONE");
 
 #define I2C_BUS_AVAILABLE 1
 #define SLAVE_DEVICE_NAME "MPU6050"
-#define MPU6050_SLAVE_ADDRESS 0x68
+
+// ioctl
+#define GX _IOR('a', 'a', int16_t *)
+#define GY _IOR('a', 'b', int16_t *)
+#define GZ _IOR('a', 'c', int16_t *)
+#define AX _IOR('a', 'd', int16_t *)
+#define AY _IOR('a', 'e', int16_t *)
+#define AZ _IOR('a', 'f', int16_t *)
 
 // MPU6050 registers
-
+const u8 MPU6050_SLAVE_ADDRESS = 0x68;
 const u8 PWR_MGMT_1 = 0x6B;
 const u8 GYRO_CONFIG = 0x1B;
 const u8 ACCEL_CONFIG = 0x1C;
@@ -43,36 +49,17 @@ const u8 SLEEP = 0x00;
 const u8 DLPF_CFG = 0x06;
 //-------------
 
-static char *values_format = NULL;
+typedef struct RawMpuValues {
+  u16 ACCEL_X;
+  u16 ACCEL_Y;
+  u16 ACCEL_Z;
+  u16 GYRO_X;
+  u16 GYRO_Y;
+  u16 GYRO_Z;
 
-// kthread
-static struct task_struct *read_thread;
+} RawMpuValues;
 
-//--
-
-int read_accel_raw_values(void *pv) {
-  while (!kthread_should_stop()) {
-    u16 ACCEL_X = 0;
-    u16 ACCEL_Y = 0;
-    u16 ACCEL_Z = 0;
-    u16 GYRO_X = 0;
-    u16 GYRO_Y = 0;
-    u16 GYRO_Z = 0;
-    ACCEL_X = i2c_smbus_read_word_data(mpu6050_i2c_client,
-                                       59); // TODO: implement a for loop
-    ACCEL_Y = i2c_smbus_read_word_data(mpu6050_i2c_client, 61);
-    ACCEL_Z = i2c_smbus_read_word_data(mpu6050_i2c_client, 63);
-    GYRO_X = i2c_smbus_read_word_data(mpu6050_i2c_client, 67);
-    GYRO_Y = i2c_smbus_read_word_data(mpu6050_i2c_client, 69);
-    GYRO_Z = i2c_smbus_read_word_data(mpu6050_i2c_client, 71);
-
-    snprintf(values_format, 80, "%d|%d|%d|%d|%d|%d", ACCEL_X, ACCEL_Y, ACCEL_Z,
-             GYRO_X, GYRO_Y, GYRO_Z);
-    msleep(1000);
-  }
-  return 0;
-}
-
+RawMpuValues mpu = {0, 0, 0, 0, 0, 0};
 static const struct i2c_device_id mpu6050_id[] = {{SLAVE_DEVICE_NAME, 0}, {}};
 static struct i2c_driver mpu6050_driver = { // it have const before
     .driver = {.name = SLAVE_DEVICE_NAME, .owner = THIS_MODULE}};
@@ -110,35 +97,55 @@ void config_mpu6050(void) {
 
 static ssize_t driver_read(struct file *file, char __user *user_buffer,
                            size_t count, loff_t *offs) {
-  int to_copy, not_copied, delta;
-  char out_string[60];
+  pr_info("Read Function\n");
+  return 0;
+}
 
-  if (*offs >= sizeof(out_string))
-    return 0;
+void get_raw_value(unsigned long arg, u16 *mpuValueRegister, u8 mpuRegister) {
+  *mpuValueRegister = i2c_smbus_read_word_data(mpu6050_i2c_client, mpuRegister);
+  if (copy_to_user((u16 *)arg, mpuValueRegister, sizeof(u16))) {
+    pr_err("Data Read : Err!\n");
+  }
+}
 
-  snprintf(out_string, sizeof(out_string), "%s\n", values_format);
-  to_copy = min_t(int, strlen(out_string) - *offs, count);
-  if (to_copy <= 0)
-    return 0;
+static long etx_ioctl(struct file *file, unsigned int cmd, unsigned long arg) {
+  switch (cmd) {
+  case GX:
+    get_raw_value(arg, &mpu.GYRO_X, 67);
+    break;
+  case GY:
+    get_raw_value(arg, &mpu.GYRO_Y, 69);
+    break;
+  case GZ:
+    get_raw_value(arg, &mpu.GYRO_Z, 71);
+    break;
+  case AX:
+    get_raw_value(arg, &mpu.ACCEL_X, 59);
+    break;
+  case AY:
+    get_raw_value(arg, &mpu.ACCEL_Y, 61);
+    break;
+  case AZ:
+    get_raw_value(arg, &mpu.ACCEL_Z, 63);
+    break;
 
-  not_copied = copy_to_user(user_buffer, out_string + *offs, to_copy);
-  delta = to_copy - not_copied;
-
-  *offs += delta;
-
-  return delta;
+  default:
+    pr_info("Default\n");
+    break;
+  }
+  return 0;
 }
 
 static struct file_operations fops = {.owner = THIS_MODULE,
                                       .open = driver_open,
                                       .release = driver_close,
-                                      .read = driver_read};
+                                      .read = driver_read,
+                                      .unlocked_ioctl = etx_ioctl};
+
 static int __init ModuleInit(void) {
-  // allocated memory for output format
 
   int ret = -1;
   int id;
-  values_format = vmalloc(100);
 
   if (alloc_chrdev_region(&myDeviceNr, 0, 1, DRIVER_NAME) < 0) {
     printk("MPU6050: Device NR,could not be allocater\n");
@@ -179,14 +186,6 @@ static int __init ModuleInit(void) {
   } else {
     printk("MPU6050: Mpu6050 not found");
   }
-  read_thread =
-      kthread_create(read_accel_raw_values, NULL, "raw values mpu read");
-  if (read_thread) {
-    wake_up_process(read_thread);
-  } else {
-    pr_err("MPU6050: cannot create driver");
-    goto KernelError;
-  }
   return ret;
 KernelError:
   device_destroy(myClass, myDeviceNr);
@@ -205,8 +204,8 @@ static void __exit ModuleExit(void) {
   device_destroy(myClass, myDeviceNr);
   class_destroy(myClass);
   unregister_chrdev_region(myDeviceNr, 1);
-  vfree(values_format);
-  kthread_stop(read_thread);
+  // vfree(values_format);
+  // kthread_stop(read_thread);
 }
 module_init(ModuleInit);
 module_exit(ModuleExit);
