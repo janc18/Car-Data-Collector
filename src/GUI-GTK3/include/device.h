@@ -5,6 +5,17 @@
 #include <poll.h>
 #include <stdbool.h>
 #include <stdint.h>
+
+typedef struct RawMpuValues {
+  int32_t ACCEL_X;
+  int32_t ACCEL_Y;
+  int32_t ACCEL_Z;
+  int32_t GYRO_X;
+  int32_t GYRO_Y;
+  int32_t GYRO_Z;
+
+} RawMpuValues;
+
 /**
  *@brief Structure to hold information about a device.
  *This structure contains information about a device,
@@ -17,11 +28,19 @@ typedef struct Device {
   char path[50];
   bool found;
   guint32 version;
-  guint8 axis;
+  RawMpuValues mpu;
 } Device;
+
+#define GX _IOR('a', 'a', int16_t *)
+#define GY _IOR('a', 'b', int16_t *)
+#define GZ _IOR('a', 'c', int16_t *)
+#define AX _IOR('a', 'd', int16_t *)
+#define AY _IOR('a', 'e', int16_t *)
+#define AZ _IOR('a', 'f', int16_t *)
 
 int searchMpu6050Device(Device *mpu);
 void showDevInfo(Device *mpu);
+gboolean UpdateVisualData(gpointer data);
 
 #endif
 // #pragma once
