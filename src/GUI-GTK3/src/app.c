@@ -27,15 +27,14 @@ static void car_app_activate(GApplication *app) {
   CAR_APP(app)->priv->UI = buildObjects(GTK_APPLICATION(app));
   ObjectsUI *UI = car_app_get_gui(CAR_APP(app));
   g_set_prgname("CAR");
-  // UI->pixbuf = gdk_pixbuf_new_from_file("../src_images/Volante2.png", NULL);
-  // UI->rotation = 0.0;
+  searchMpu6050Device(device);
+  g_printerr(device->found ? "Device found\n" : "Device not found");
   signalsConnection(UI, CAR_APP(app));
   CAR_APP(app)->priv->device = device;
   gtk_main();
 }
 
 static void car_app_startup(GApplication *app) { G_APPLICATION_CLASS(car_app_parent_class)->startup(app); }
-
 GtkApplication *car_app_new(void) { return g_object_new(CAT_TYPE_CAR_APP, "application_id", "net.cat.car", "flags", G_APPLICATION_FLAGS_NONE, NULL); }
 ObjectsUI *car_app_get_gui(CARApp *app) { return app->priv->UI; }
 static void car_app_class_init(CARAppClass *class) {
