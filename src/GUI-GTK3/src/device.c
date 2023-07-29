@@ -56,9 +56,10 @@ int searchMpu6050Device(Device *mpu) {
   g_printerr("Searching for Device\n");
   fd = open(DevicePath, O_RDWR);
   if (fd > 0) {
-    close(fd);
+    //close(fd);
     mpu->found = true;
     mpu->fd = fd;
+    g_printerr("%d",mpu->fd);
     return 1;
   } else {
     mpu->found = false;
@@ -82,8 +83,10 @@ void showDevInfo(Device *mpu) {
   g_printerr("\n-----------------\n");
   g_printerr("File Descriptor %d \n", mpu->fd);
   g_printerr("Device Version %d \n", mpu->version);
-  g_printerr("Device Path %s\n", mpu->path);
-  g_printerr(mpu->found ? "Device found\n" : "Device not found");
+  g_printerr(mpu->found ? "Device found\n" : "Device not found\n");
+  g_printerr("%d\n", mpu->mpu.GYRO_X);
+  g_printerr("%d\n", mpu->mpu.GYRO_Y);
+  g_printerr("%d\n", mpu->mpu.GYRO_Z);
   g_printerr("-------------------\n");
 }
 /**
@@ -94,25 +97,35 @@ void showDevInfo(Device *mpu) {
  */
 
 void SetDataToBarAndText(GtkWidget *LevelBar, int32_t MpuValue, GtkWidget *LabelValue) {
-  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(LevelBar), MpuValue / 32000.0);
+  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(LevelBar), MpuValue / 65535.0);
   char Buffer[15];
   snprintf(Buffer, sizeof(Buffer), "%d", MpuValue);
   gtk_label_set_text(GTK_LABEL(LabelValue), Buffer);
 }
-
 void GetDataFromDriverIOCTL(Device *car) {
-  ioctl(car->fd, GX, (int32_t *)&car->mpu.GYRO_X);
-  ioctl(car->fd, GY, (int32_t *)&car->mpu.GYRO_Y);
-  ioctl(car->fd, GZ, (int32_t *)&car->mpu.GYRO_Z);
+  car->mpu.GYRO_X=0;
+  car->mpu.GYRO_Z=0;
+  car->mpu.GYRO_Y=0;
+  car->mpu.ACCEL_X=0;
+  car->mpu.ACCEL_Y=0;
+  car->mpu.ACCEL_Z=0;
+  ioctl(car->fd, GX, (int32_t*)&car->mpu.GYRO_X);
+  usleep(18000);
+  ioctl(car->fd, GY, (int32_t*)&car->mpu.GYRO_Y);
+  usleep(18000);
+  ioctl(car->fd, GZ, (int32_t*)&car->mpu.GYRO_Z);
+  usleep(18000);
 }
 
 gboolean UpdateVisualData(gpointer data) {
-  g_printerr("Triggered function \"UpdateVisualData\"\n");
   CARApp *app = G_POINTER_TO_CAR_APP(data);
   ObjectsUI *UI = car_app_get_gui(app);
   Device *car = CAR_APP(app)->priv->device;
-  showDevInfo(car);
   GetDataFromDriverIOCTL(car);
+#ifdef DEBUG
+  showDevInfo(car);
+  g_printerr("Triggered function \"UpdateVisualData\"\n");
+#endif
   SetDataToBarAndText(UI->YawLevelBar, car->mpu.GYRO_X, UI->YawText);
   SetDataToBarAndText(UI->RollLevelBar, car->mpu.GYRO_Y, UI->RollText);
   SetDataToBarAndText(UI->PitchLevelBar, car->mpu.GYRO_Z, UI->PitchText);
