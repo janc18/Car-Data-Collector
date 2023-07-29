@@ -106,14 +106,24 @@ void SetDataToBarAndText(GtkWidget *LevelBar, int32_t MpuValue, GtkWidget *Label
   gtk_label_set_text(GTK_LABEL(LabelValue), Buffer);
 }
 void GetDataFromDriverIOCTL(Device *car) {
-  int32_t RegisterValues[6] = {car->mpu.GYRO_X, car->mpu.GYRO_Y, car->mpu.GYRO_Z, car->mpu.ACCEL_X, car->mpu.GYRO_Y, car->mpu.GYRO_Z};
-  for (int i = 0; i < 6; i++) {
-    RegisterValues[i] = 0;
-  }
-  for (int i = 0; i < 6; i++) {
-    ioctl(car->fd, GX, (int32_t *)&RegisterValues[i]);
+  car->mpu.GYRO_X=0;
+  car->mpu.GYRO_Y=0;
+  car->mpu.GYRO_Z=0;
+  car->mpu.ACCEL_X=0;
+  car->mpu.ACCEL_Y=0;
+  car->mpu.ACCEL_Z=0;
+    ioctl(car->fd, GX, (int32_t *)&car->mpu.GYRO_X);
     usleep(18000);
-  }
+    ioctl(car->fd, GY, (int32_t *)&car->mpu.GYRO_Y);
+    usleep(18000);
+    ioctl(car->fd, GZ, (int32_t *)&car->mpu.GYRO_Z);
+    usleep(18000);
+    ioctl(car->fd, AX, (int32_t *)&car->mpu.ACCEL_X);
+    usleep(18000);
+    ioctl(car->fd, AY, (int32_t *)&car->mpu.ACCEL_Y);
+    usleep(18000);
+    ioctl(car->fd, AZ, (int32_t *)&car->mpu.ACCEL_Z);
+    usleep(18000);
 }
 
 gboolean UpdateVisualData(gpointer data) {
