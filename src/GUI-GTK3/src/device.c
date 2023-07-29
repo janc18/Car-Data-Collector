@@ -24,7 +24,9 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <math.h>
 
+#define ALPHA 0.3
 /**
  * @brief Name of the device to search
  */
@@ -56,10 +58,8 @@ int searchMpu6050Device(Device *mpu) {
   g_printerr("Searching for Device\n");
   fd = open(DevicePath, O_RDWR);
   if (fd > 0) {
-    // close(fd);
     mpu->found = true;
     mpu->fd = fd;
-    g_printerr("%d", mpu->fd);
     return 1;
   } else {
     mpu->found = false;
@@ -124,6 +124,13 @@ void GetDataFromDriverIOCTL(Device *car) {
     usleep(18000);
     ioctl(car->fd, AZ, (int32_t *)&car->mpu.ACCEL_Z);
     usleep(18000);
+//----------
+    car->mpu.GYRO_X=exponential_moving_average_filter(car->mpu.GYRO_X);
+    car->mpu.GYRO_Y=exponential_moving_average_filter(car->mpu.GYRO_Y);
+    car->mpu.GYRO_Z=exponential_moving_average_filter(car->mpu.GYRO_Z);
+    car->mpu.ACCEL_X=exponential_moving_average_filter(car->mpu.ACCEL_X);
+    car->mpu.ACCEL_Y=exponential_moving_average_filter(car->mpu.ACCEL_Y);
+    car->mpu.ACCEL_Z=exponential_moving_average_filter(car->mpu.ACCEL_Z);
 }
 
 gboolean UpdateVisualData(gpointer data) {
@@ -143,3 +150,11 @@ gboolean UpdateVisualData(gpointer data) {
   SetDataToBarAndText(UI->AccelZLevelBar, car->mpu.ACCEL_Z, UI->AccelZText);
   return TRUE;
 }
+
+
+int exponential_moving_average_filter(int new_data) {
+    static float smoothed_data = 0;
+    smoothed_data = (1 - ALPHA) * smoothed_data + ALPHA * new_data;
+    return (int)round(smoothed_data);
+}
+
