@@ -56,10 +56,10 @@ int searchMpu6050Device(Device *mpu) {
   g_printerr("Searching for Device\n");
   fd = open(DevicePath, O_RDWR);
   if (fd > 0) {
-    //close(fd);
+    // close(fd);
     mpu->found = true;
     mpu->fd = fd;
-    g_printerr("%d",mpu->fd);
+    g_printerr("%d", mpu->fd);
     return 1;
   } else {
     mpu->found = false;
@@ -87,6 +87,9 @@ void showDevInfo(Device *mpu) {
   g_printerr("%d\n", mpu->mpu.GYRO_X);
   g_printerr("%d\n", mpu->mpu.GYRO_Y);
   g_printerr("%d\n", mpu->mpu.GYRO_Z);
+  g_printerr("%d\n", mpu->mpu.ACCEL_X);
+  g_printerr("%d\n", mpu->mpu.ACCEL_Y);
+  g_printerr("%d\n", mpu->mpu.ACCEL_Z);
   g_printerr("-------------------\n");
 }
 /**
@@ -103,18 +106,14 @@ void SetDataToBarAndText(GtkWidget *LevelBar, int32_t MpuValue, GtkWidget *Label
   gtk_label_set_text(GTK_LABEL(LabelValue), Buffer);
 }
 void GetDataFromDriverIOCTL(Device *car) {
-  car->mpu.GYRO_X=0;
-  car->mpu.GYRO_Z=0;
-  car->mpu.GYRO_Y=0;
-  car->mpu.ACCEL_X=0;
-  car->mpu.ACCEL_Y=0;
-  car->mpu.ACCEL_Z=0;
-  ioctl(car->fd, GX, (int32_t*)&car->mpu.GYRO_X);
-  usleep(18000);
-  ioctl(car->fd, GY, (int32_t*)&car->mpu.GYRO_Y);
-  usleep(18000);
-  ioctl(car->fd, GZ, (int32_t*)&car->mpu.GYRO_Z);
-  usleep(18000);
+  int32_t RegisterValues[6] = {car->mpu.GYRO_X, car->mpu.GYRO_Y, car->mpu.GYRO_Z, car->mpu.ACCEL_X, car->mpu.GYRO_Y, car->mpu.GYRO_Z};
+  for (int i = 0; i < 6; i++) {
+    RegisterValues[i] = 0;
+  }
+  for (int i = 0; i < 6; i++) {
+    ioctl(car->fd, GX, (int32_t *)&RegisterValues[i]);
+    usleep(18000);
+  }
 }
 
 gboolean UpdateVisualData(gpointer data) {
@@ -129,5 +128,8 @@ gboolean UpdateVisualData(gpointer data) {
   SetDataToBarAndText(UI->YawLevelBar, car->mpu.GYRO_X, UI->YawText);
   SetDataToBarAndText(UI->RollLevelBar, car->mpu.GYRO_Y, UI->RollText);
   SetDataToBarAndText(UI->PitchLevelBar, car->mpu.GYRO_Z, UI->PitchText);
+  SetDataToBarAndText(UI->AccelXLevelBar, car->mpu.ACCEL_X, UI->AccelXText);
+  SetDataToBarAndText(UI->AccelYLevelBar, car->mpu.ACCEL_Y, UI->AccelYText);
+  SetDataToBarAndText(UI->AccelZLevelBar, car->mpu.ACCEL_Z, UI->AccelZText);
   return TRUE;
 }
