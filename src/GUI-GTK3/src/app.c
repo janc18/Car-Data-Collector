@@ -28,12 +28,13 @@ static void car_app_activate(GApplication *app) {
   ObjectsUI *UI = car_app_get_gui(CAR_APP(app));
   g_set_prgname("CAR");
   searchMpu6050Device(device);
-  g_printerr(device->found ? "Device found\n" : "Device not found");
-  if (device->found) {
-    guint timer_id = g_timeout_add(150, UpdateVisualData, app);
-  }
+  g_printerr(device->found ? "Device found\n" : "Device not found\n");
+ // 
   signalsConnection(UI, CAR_APP(app));
   CAR_APP(app)->priv->device = device;
+  if (device->found) {
+  	guint timer_id = g_timeout_add(150, UpdateVisualData, app);
+  }
   gtk_main();
 }
 
