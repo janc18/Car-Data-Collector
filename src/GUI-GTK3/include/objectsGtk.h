@@ -5,4 +5,4 @@
 void start_gui(void);
 ObjectsUI *buildObjects(GtkApplication *app);
 void signalsConnection(ObjectsUI *obj, CARApp *app);
-//  #pragma once
+void freeElements(gpointer data);
