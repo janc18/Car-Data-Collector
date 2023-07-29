@@ -18,6 +18,12 @@ struct _ObjectsUI {
   GtkWidget *PitchText;
   GtkWidget *YawLevelBar;
   GtkWidget *YawText;
+  GtkWidget *AccelXLevelBar;
+  GtkWidget *AccelXText;
+  GtkWidget *AccelYLevelBar;
+  GtkWidget *AccelYText;
+  GtkWidget *AccelZLevelBar;
+  GtkWidget *AccelZText;
 };
 
 typedef struct _CARAppPrivate CARAppPrivate;
