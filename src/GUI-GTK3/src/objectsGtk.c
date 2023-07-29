@@ -53,10 +53,22 @@ ObjectsUI *buildObjects(GtkApplication *app) {
   obj->Window = GTK_WIDGET(gtk_builder_get_object(constructor, "Window"));
   obj->RollLevelBar = GTK_WIDGET(gtk_builder_get_object(constructor, "LevelBarAxis0"));
   obj->RollText = GTK_WIDGET(gtk_builder_get_object(constructor, "Axis0"));
+
   obj->PitchLevelBar = GTK_WIDGET(gtk_builder_get_object(constructor, "LevelBarAxis1"));
   obj->PitchText = GTK_WIDGET(gtk_builder_get_object(constructor, "Axis1"));
+
   obj->YawLevelBar = GTK_WIDGET(gtk_builder_get_object(constructor, "LevelBarAxis2"));
   obj->YawText = GTK_WIDGET(gtk_builder_get_object(constructor, "Axis2"));
+
+  obj->AccelXLevelBar = GTK_WIDGET(gtk_builder_get_object(constructor, "LevelBarAxis3"));
+  obj->AccelXText = GTK_WIDGET(gtk_builder_get_object(constructor, "Axis3"));
+
+  obj->AccelYLevelBar = GTK_WIDGET(gtk_builder_get_object(constructor, "LevelBarAxis4"));
+  obj->AccelYText = GTK_WIDGET(gtk_builder_get_object(constructor, "Axis4"));
+
+  obj->AccelZLevelBar = GTK_WIDGET(gtk_builder_get_object(constructor, "LevelBarAxis5"));
+  obj->AccelZText = GTK_WIDGET(gtk_builder_get_object(constructor, "Axis5"));
+
   return obj;
   g_object_unref(G_OBJECT(constructor));
 }
