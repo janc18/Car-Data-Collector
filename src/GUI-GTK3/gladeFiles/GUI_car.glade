@@ -69,7 +69,7 @@
             <property name="orientation">vertical</property>
             <property name="homogeneous">True</property>
             <child>
-              <object class="GtkLevelBar" id="LevelBarAxis0">
+              <object class="GtkProgressBar" id="LevelBarAxis0">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
               </object>
@@ -80,7 +80,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLevelBar" id="LevelBarAxis1">
+              <object class="GtkProgressBar" id="LevelBarAxis1">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
               </object>
@@ -91,7 +91,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLevelBar" id="LevelBarAxis2">
+              <object class="GtkProgressBar" id="LevelBarAxis2">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
               </object>
