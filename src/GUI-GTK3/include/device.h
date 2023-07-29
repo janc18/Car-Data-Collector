@@ -5,6 +5,12 @@
 #include <poll.h>
 #include <stdbool.h>
 #include <stdint.h>
+#define GX _IOR('a', 'a', int16_t *)
+#define GY _IOR('a', 'b', int16_t *)
+#define GZ _IOR('a', 'c', int16_t *)
+#define AX _IOR('a', 'd', int16_t *)
+#define AY _IOR('a', 'e', int16_t *)
+#define AZ _IOR('a', 'f', int16_t *)
 
 typedef struct RawMpuValues {
   int32_t ACCEL_X;
@@ -31,16 +37,8 @@ typedef struct Device {
   RawMpuValues mpu;
 } Device;
 
-#define GX _IOR('a', 'a', int16_t *)
-#define GY _IOR('a', 'b', int16_t *)
-#define GZ _IOR('a', 'c', int16_t *)
-#define AX _IOR('a', 'd', int16_t *)
-#define AY _IOR('a', 'e', int16_t *)
-#define AZ _IOR('a', 'f', int16_t *)
-
 int searchMpu6050Device(Device *mpu);
 void showDevInfo(Device *mpu);
 gboolean UpdateVisualData(gpointer data);
-
+int exponential_moving_average_filter(int new_data); 
 #endif
-// #pragma once
