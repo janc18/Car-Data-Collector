@@ -16,4 +16,4 @@ add_definitions (${GTK3_CFLAGS_OTHER})
 add_executable(executable main.c "${MAIN}")
 
 set_target_properties(executable PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
-target_link_libraries (executable ${GTK3_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries (executable ${GTK3_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} m)
