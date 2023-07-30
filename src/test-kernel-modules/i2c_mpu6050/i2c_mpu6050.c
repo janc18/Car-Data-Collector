@@ -42,9 +42,9 @@ const u8 CONFIG = 0x1A;
 //---------------
 
 // Config registers
-const u8 CLKSEL = 0x01;
-const u8 FS_SEL = 0x00;
-const u8 AFS_SEL = 0x00;
+const u8 CLKSEL = 0x03;
+const u8 FS_SEL = 0x03;
+const u8 AFS_SEL = 0x03;
 const u8 SLEEP = 0x00;
 const u8 DLPF_CFG = 0x06;
 //-------------
@@ -204,8 +204,6 @@ static void __exit ModuleExit(void) {
   device_destroy(myClass, myDeviceNr);
   class_destroy(myClass);
   unregister_chrdev_region(myDeviceNr, 1);
-  // vfree(values_format);
-  // kthread_stop(read_thread);
 }
 module_init(ModuleInit);
 module_exit(ModuleExit);
