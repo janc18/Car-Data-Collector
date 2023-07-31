@@ -51,14 +51,14 @@ ObjectsUI *buildObjects(GtkApplication *app) {
 #endif
 
   obj->Window = GTK_WIDGET(gtk_builder_get_object(constructor, "Window"));
-  obj->RollLevelBar = GTK_WIDGET(gtk_builder_get_object(constructor, "LevelBarAxis0"));
-  obj->RollText = GTK_WIDGET(gtk_builder_get_object(constructor, "Axis0"));
+  obj->GXLevelBar = GTK_WIDGET(gtk_builder_get_object(constructor, "LevelBarAxis0"));
+  obj->GXText = GTK_WIDGET(gtk_builder_get_object(constructor, "Axis0"));
 
-  obj->PitchLevelBar = GTK_WIDGET(gtk_builder_get_object(constructor, "LevelBarAxis1"));
-  obj->PitchText = GTK_WIDGET(gtk_builder_get_object(constructor, "Axis1"));
+  obj->GYLevelBar = GTK_WIDGET(gtk_builder_get_object(constructor, "LevelBarAxis1"));
+  obj->GYText = GTK_WIDGET(gtk_builder_get_object(constructor, "Axis1"));
 
-  obj->YawLevelBar = GTK_WIDGET(gtk_builder_get_object(constructor, "LevelBarAxis2"));
-  obj->YawText = GTK_WIDGET(gtk_builder_get_object(constructor, "Axis2"));
+  obj->GZLevelBar = GTK_WIDGET(gtk_builder_get_object(constructor, "LevelBarAxis2"));
+  obj->GZText = GTK_WIDGET(gtk_builder_get_object(constructor, "Axis2"));
 
   obj->AccelXLevelBar = GTK_WIDGET(gtk_builder_get_object(constructor, "LevelBarAxis3"));
   obj->AccelXText = GTK_WIDGET(gtk_builder_get_object(constructor, "Axis3"));

@@ -12,12 +12,12 @@ typedef struct _ObjectsUI ObjectsUI;
 
 struct _ObjectsUI {
   GtkWidget *Window;
-  GtkWidget *RollLevelBar;
-  GtkWidget *RollText;
-  GtkWidget *PitchLevelBar;
-  GtkWidget *PitchText;
-  GtkWidget *YawLevelBar;
-  GtkWidget *YawText;
+  GtkWidget *GXLevelBar;
+  GtkWidget *GXText;
+  GtkWidget *GYLevelBar;
+  GtkWidget *GYText;
+  GtkWidget *GZLevelBar;
+  GtkWidget *GZText;
   GtkWidget *AccelXLevelBar;
   GtkWidget *AccelXText;
   GtkWidget *AccelYLevelBar;

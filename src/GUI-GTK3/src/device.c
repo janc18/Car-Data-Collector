@@ -127,8 +127,8 @@ gboolean UpdateVisualData(gpointer data) {
   Device *car = CAR_APP(app)->priv->device;
   GetDataFromDriverIOCTL(car);
   int32_t *pMpuValues[6] = {&car->mpu.GYRO_X, &car->mpu.GYRO_Y, &car->mpu.GYRO_Z, &car->mpu.ACCEL_X, &car->mpu.ACCEL_Y, &car->mpu.ACCEL_Z};
-  GtkWidget **Labels[6] = {&UI->YawText, &UI->RollText, &UI->PitchText, &UI->AccelXText, &UI->AccelYText, &UI->AccelZText};
-  GtkWidget **LevelBar[6] = {&UI->YawLevelBar, &UI->RollLevelBar, &UI->PitchLevelBar, &UI->AccelXLevelBar, &UI->AccelYLevelBar, &UI->AccelZLevelBar};
+  GtkWidget **Labels[6] = {&UI->GXText, &UI->GYText, &UI->GZText, &UI->AccelXText, &UI->AccelYText, &UI->AccelZText};
+  GtkWidget **LevelBar[6] = {&UI->GXLevelBar, &UI->GYLevelBar, &UI->GZLevelBar, &UI->AccelXLevelBar, &UI->AccelYLevelBar, &UI->AccelZLevelBar};
 #ifdef DEBUG
   showDevInfo(car);
   g_printerr("Triggered function \"UpdateVisualData\"\n");
