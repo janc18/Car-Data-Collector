@@ -17,6 +17,7 @@
 #include <fcntl.h>
 #include <glib.h>
 #include <gtk/gtk.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -24,7 +25,6 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include <math.h>
 
 #define ALPHA 0.3
 /**
@@ -36,11 +36,13 @@ const char mpu[] = "mpu6050";
  * @brief Device path
  */
 const char DevicePath[] = "/dev/mpu6050";
-
+/**
+ * @brief MPU6050 Array with IOCTL Commands to get the raw values
+ */
 unsigned int ioctlCmd[6] = {GX, GY, GZ, AX, AY, AZ};
 
 /**
- * @brief Search for an mpu6050 device.
+ * @brief Search for an mpu6047 device.
  *
  * Look on the next path
  * - /dev/mpu6050
@@ -106,31 +108,17 @@ void SetDataToBarAndText(GtkWidget *LevelBar, int32_t MpuValue, GtkWidget *Label
   gtk_label_set_text(GTK_LABEL(LabelValue), Buffer);
 }
 void GetDataFromDriverIOCTL(Device *car) {
-  car->mpu.GYRO_X=0;
-  car->mpu.GYRO_Y=0;
-  car->mpu.GYRO_Z=0;
-  car->mpu.ACCEL_X=0;
-  car->mpu.ACCEL_Y=0;
-  car->mpu.ACCEL_Z=0;
-    ioctl(car->fd, GX, (int32_t *)&car->mpu.GYRO_X);
+  int32_t *pMpuValues[6] = {&car->mpu.GYRO_X, &car->mpu.GYRO_Y, &car->mpu.GYRO_Z, &car->mpu.ACCEL_X, &car->mpu.ACCEL_Y, &car->mpu.ACCEL_Z};
+  for (int i = 0; i < 6; i++) {
+    *(pMpuValues[i]) = 0;
+  }
+  for (int i = 0; i < 6; i++) {
+    ioctl(car->fd, ioctlCmd[i], (int32_t *)pMpuValues[i]);
     usleep(18000);
-    ioctl(car->fd, GY, (int32_t *)&car->mpu.GYRO_Y);
-    usleep(18000);
-    ioctl(car->fd, GZ, (int32_t *)&car->mpu.GYRO_Z);
-    usleep(18000);
-    ioctl(car->fd, AX, (int32_t *)&car->mpu.ACCEL_X);
-    usleep(18000);
-    ioctl(car->fd, AY, (int32_t *)&car->mpu.ACCEL_Y);
-    usleep(18000);
-    ioctl(car->fd, AZ, (int32_t *)&car->mpu.ACCEL_Z);
-    usleep(18000);
-//----------
-    car->mpu.GYRO_X=exponential_moving_average_filter(car->mpu.GYRO_X);
-    car->mpu.GYRO_Y=exponential_moving_average_filter(car->mpu.GYRO_Y);
-    car->mpu.GYRO_Z=exponential_moving_average_filter(car->mpu.GYRO_Z);
-    car->mpu.ACCEL_X=exponential_moving_average_filter(car->mpu.ACCEL_X);
-    car->mpu.ACCEL_Y=exponential_moving_average_filter(car->mpu.ACCEL_Y);
-    car->mpu.ACCEL_Z=exponential_moving_average_filter(car->mpu.ACCEL_Z);
+  }
+  for (int i = 0; i < 6; i++) {
+    *(pMpuValues[i]) = exponential_moving_average_filter(*(pMpuValues[i]));
+  }
 }
 
 gboolean UpdateVisualData(gpointer data) {
@@ -138,23 +126,21 @@ gboolean UpdateVisualData(gpointer data) {
   ObjectsUI *UI = car_app_get_gui(app);
   Device *car = CAR_APP(app)->priv->device;
   GetDataFromDriverIOCTL(car);
+  int32_t *pMpuValues[6] = {&car->mpu.GYRO_X, &car->mpu.GYRO_Y, &car->mpu.GYRO_Z, &car->mpu.ACCEL_X, &car->mpu.ACCEL_Y, &car->mpu.ACCEL_Z};
+  GtkWidget **Labels[6] = {&UI->YawText, &UI->RollText, &UI->PitchText, &UI->AccelXText, &UI->AccelYText, &UI->AccelZText};
+  GtkWidget **LevelBar[6] = {&UI->YawLevelBar, &UI->RollLevelBar, &UI->PitchLevelBar, &UI->AccelXLevelBar, &UI->AccelYLevelBar, &UI->AccelZLevelBar};
 #ifdef DEBUG
   showDevInfo(car);
   g_printerr("Triggered function \"UpdateVisualData\"\n");
 #endif
-  SetDataToBarAndText(UI->YawLevelBar, car->mpu.GYRO_X, UI->YawText);
-  SetDataToBarAndText(UI->RollLevelBar, car->mpu.GYRO_Y, UI->RollText);
-  SetDataToBarAndText(UI->PitchLevelBar, car->mpu.GYRO_Z, UI->PitchText);
-  SetDataToBarAndText(UI->AccelXLevelBar, car->mpu.ACCEL_X, UI->AccelXText);
-  SetDataToBarAndText(UI->AccelYLevelBar, car->mpu.ACCEL_Y, UI->AccelYText);
-  SetDataToBarAndText(UI->AccelZLevelBar, car->mpu.ACCEL_Z, UI->AccelZText);
+  for (int i = 0; i < 6; i++) {
+    SetDataToBarAndText(*(LevelBar[i]), *(pMpuValues[i]), *(Labels[i]));
+  }
   return TRUE;
 }
 
-
 int exponential_moving_average_filter(int new_data) {
-    static float smoothed_data = 0;
-    smoothed_data = (1 - ALPHA) * smoothed_data + ALPHA * new_data;
-    return (int)round(smoothed_data);
+  static float smoothed_data = 0;
+  smoothed_data = (1 - ALPHA) * smoothed_data + ALPHA * new_data;
+  return (int)round(smoothed_data);
 }
-
