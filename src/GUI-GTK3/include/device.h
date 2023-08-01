@@ -19,7 +19,6 @@ typedef struct RawMpuValues {
   int32_t GYRO_X;
   int32_t GYRO_Y;
   int32_t GYRO_Z;
-
 } RawMpuValues;
 
 /**
@@ -40,5 +39,5 @@ typedef struct Device {
 int searchMpu6050Device(Device *mpu);
 void showDevInfo(Device *mpu);
 gboolean UpdateVisualData(gpointer data);
-int exponential_moving_average_filter(int new_data); 
+int exponential_moving_average_filter(int new_data);
 #endif

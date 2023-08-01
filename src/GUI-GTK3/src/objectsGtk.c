@@ -19,7 +19,6 @@
 #include <gtk/gtk.h>
 /**
  * @brief Start gui
- *
  * Load glade files
  */
 void start_gui(void) {

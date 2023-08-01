@@ -26,7 +26,11 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-#define ALPHA 0.3
+/**
+ * @brief Const float to smooth the data
+ */
+const float ALPHA = 0.3;
+
 /**
  * @brief Name of the device to search
  */
@@ -36,6 +40,7 @@ const char mpu[] = "mpu6050";
  * @brief Device path
  */
 const char DevicePath[] = "/dev/mpu6050";
+
 /**
  * @brief MPU6050 Array with IOCTL Commands to get the raw values
  */
@@ -69,44 +74,46 @@ int searchMpu6050Device(Device *mpu) {
     return -1;
   }
 }
+
 /**
  *@brief Print on terminal Device's information
  *
  *Like:
  * - File Descriptor
  * - Device Version
- * - Path
  * - Device found
+ * - Raw values from the mpu(Gyroscope and Accelerometer)
  *@param Device* Struct with all the Device data
  */
-
-void showDevInfo(Device *mpu) {
-
+void showDevInfo(Device *car) {
+  int32_t *pMpuValues[6] = {&car->mpu.GYRO_X, &car->mpu.GYRO_Y, &car->mpu.GYRO_Z, &car->mpu.ACCEL_X, &car->mpu.ACCEL_Y, &car->mpu.ACCEL_Z};
   g_printerr("\n-----------------\n");
-  g_printerr("File Descriptor %d \n", mpu->fd);
-  g_printerr("Device Version %d \n", mpu->version);
-  g_printerr(mpu->found ? "Device found\n" : "Device not found\n");
-  g_printerr("%d\n", mpu->mpu.GYRO_X);
-  g_printerr("%d\n", mpu->mpu.GYRO_Y);
-  g_printerr("%d\n", mpu->mpu.GYRO_Z);
-  g_printerr("%d\n", mpu->mpu.ACCEL_X);
-  g_printerr("%d\n", mpu->mpu.ACCEL_Y);
-  g_printerr("%d\n", mpu->mpu.ACCEL_Z);
+  g_printerr("File Descriptor %d \n", car->fd);
+  g_printerr("Device Version %d \n", car->version);
+  g_printerr(car->found ? "Device found\n" : "Device not found\n");
+  for (int i = 0; i < 6; i++) {
+    g_printerr("%d\n", *(pMpuValues[i]));
+  }
   g_printerr("-------------------\n");
 }
-/**
- *@brief Update level bar ,corresponded to one axis
- *@param *ObjectsUI Struct with all the UI's components
- *@param guint8 Axis'number for example: number=1 correspond to the brake
- *@param guint16 Value of axis
- */
 
+/**
+ *@brief Set data to Levels Bars and Labels
+ *@param *GtkWidget Level Bar Widget
+ *@param int32_t Raw value from the mpu
+ *@param *GtkWidget Label Widget
+ */
 void SetDataToBarAndText(GtkWidget *LevelBar, int32_t MpuValue, GtkWidget *LabelValue) {
   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(LevelBar), MpuValue / 65535.0);
   char Buffer[15];
   snprintf(Buffer, sizeof(Buffer), "%d", MpuValue);
   gtk_label_set_text(GTK_LABEL(LabelValue), Buffer);
 }
+
+/**
+ * @brief Get data from the Driver with IOCTL commands and save in the car struct
+ * @param *Device car struct
+ */
 void GetDataFromDriverIOCTL(Device *car) {
   int32_t *pMpuValues[6] = {&car->mpu.GYRO_X, &car->mpu.GYRO_Y, &car->mpu.GYRO_Z, &car->mpu.ACCEL_X, &car->mpu.ACCEL_Y, &car->mpu.ACCEL_Z};
   for (int i = 0; i < 6; i++) {
@@ -121,6 +128,11 @@ void GetDataFromDriverIOCTL(Device *car) {
   }
 }
 
+/**
+ * @brief Draw the new values to level bars and labels
+ * @param gpointer with CARApp data
+ * @return TRUE
+ */
 gboolean UpdateVisualData(gpointer data) {
   CARApp *app = G_POINTER_TO_CAR_APP(data);
   ObjectsUI *UI = car_app_get_gui(app);
@@ -139,6 +151,11 @@ gboolean UpdateVisualData(gpointer data) {
   return TRUE;
 }
 
+/**
+ * @brief Filter to smooth data
+ * @param int data to be smoothed
+ * @return int value smoothed
+ */
 int exponential_moving_average_filter(int new_data) {
   static float smoothed_data = 0;
   smoothed_data = (1 - ALPHA) * smoothed_data + ALPHA * new_data;
