@@ -17,6 +17,8 @@
 #include "app.h"
 #include <cairo.h>
 #include <gtk/gtk.h>
+const char pathGladeFile[] = "../gladeFiles/GUI_car_1.glade";
+
 /**
  * @brief Start gui
  * Load glade files
@@ -26,7 +28,7 @@ void start_gui(void) {
   GtkBuilder *constructor = gtk_builder_new();
   gtk_init(NULL, NULL);
 
-  if (gtk_builder_add_from_file(constructor, "../gladeFiles/GUI_car.glade", &error) == 0) {
+  if (gtk_builder_add_from_file(constructor, pathGladeFile, &error) == 0) {
     g_printerr("Error no se encontro el archivo :%s \n", error->message);
     g_clear_error(&error);
   }
@@ -36,13 +38,34 @@ void start_gui(void) {
   gtk_main();
 }
 
+gboolean move_image(gpointer data) {
+  CARApp *app = G_POINTER_TO_CAR_APP(data);
+  ObjectsUI *UI = car_app_get_gui(app);
+
+  UI->x += 4;
+  g_printerr("move_image trigger");
+  return TRUE;
+}
+
+gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
+  CARApp *app = G_POINTER_TO_CAR_APP(data);
+  ObjectsUI *UI = car_app_get_gui(app);
+
+  if (UI->imageCenterCircle != NULL) {
+    gdk_cairo_set_source_pixbuf(cr, UI->imageCenterCircle, UI->x, UI->y);
+    cairo_paint(cr);
+  }
+
+  return FALSE;
+}
+
 /**
  * @brief Build all GUI objects
  * @param GtkApplication pointer with
  */
 ObjectsUI *buildObjects(GtkApplication *app) {
   GtkBuilder *constructor = gtk_builder_new();
-  gtk_builder_add_from_file(constructor, "../gladeFiles/GUI_car.glade", NULL);
+  gtk_builder_add_from_file(constructor, pathGladeFile, NULL);
   ObjectsUI *obj = g_malloc(sizeof(ObjectsUI));
 
 #ifdef DEBUG
@@ -50,24 +73,14 @@ ObjectsUI *buildObjects(GtkApplication *app) {
 #endif
 
   obj->Window = GTK_WIDGET(gtk_builder_get_object(constructor, "Window"));
-  obj->GXLevelBar = GTK_WIDGET(gtk_builder_get_object(constructor, "LevelBarAxis0"));
-  obj->GXText = GTK_WIDGET(gtk_builder_get_object(constructor, "Axis0"));
 
-  obj->GYLevelBar = GTK_WIDGET(gtk_builder_get_object(constructor, "LevelBarAxis1"));
-  obj->GYText = GTK_WIDGET(gtk_builder_get_object(constructor, "Axis1"));
-
-  obj->GZLevelBar = GTK_WIDGET(gtk_builder_get_object(constructor, "LevelBarAxis2"));
-  obj->GZText = GTK_WIDGET(gtk_builder_get_object(constructor, "Axis2"));
-
-  obj->AccelXLevelBar = GTK_WIDGET(gtk_builder_get_object(constructor, "LevelBarAxis3"));
-  obj->AccelXText = GTK_WIDGET(gtk_builder_get_object(constructor, "Axis3"));
-
-  obj->AccelYLevelBar = GTK_WIDGET(gtk_builder_get_object(constructor, "LevelBarAxis4"));
-  obj->AccelYText = GTK_WIDGET(gtk_builder_get_object(constructor, "Axis4"));
-
-  obj->AccelZLevelBar = GTK_WIDGET(gtk_builder_get_object(constructor, "LevelBarAxis5"));
-  obj->AccelZText = GTK_WIDGET(gtk_builder_get_object(constructor, "Axis5"));
-
+  obj->ProgressBarAX = GTK_WIDGET(gtk_builder_get_object(constructor, "ProgressBarAX"));
+  obj->ProgressBarAY = GTK_WIDGET(gtk_builder_get_object(constructor, "ProgressBarAY"));
+  obj->ProgressBarAZ = GTK_WIDGET(gtk_builder_get_object(constructor, "ProgressBarAZ"));
+  obj->RangeCircle = GTK_WIDGET(gtk_builder_get_object(constructor, "RangeCircle"));
+  obj->DrawingAreaCenterCircle = GTK_WIDGET(gtk_builder_get_object(constructor, "CenterCircle"));
+  gtk_image_set_from_file(GTK_IMAGE(obj->RangeCircle), "../src_images/RG.png");
+  obj->imageCenterCircle = gdk_pixbuf_new_from_file("../src_images/CC.png", NULL);
   return obj;
   g_object_unref(G_OBJECT(constructor));
 }
@@ -98,4 +111,8 @@ void freeElements(gpointer data) {
  * @param ObjectsUI struct with all the GtkWidget elements
  * @param CARApp
  */
-void signalsConnection(ObjectsUI *obj, CARApp *app) { g_signal_connect_swapped(obj->Window, "destroy", G_CALLBACK(freeElements), app); }
+void signalsConnection(ObjectsUI *obj, CARApp *app) {
+  ObjectsUI *UI = car_app_get_gui(app);
+  g_signal_connect_swapped(obj->Window, "destroy", G_CALLBACK(freeElements), app);
+  g_signal_connect(obj->DrawingAreaCenterCircle, "draw", G_CALLBACK(on_draw), app);
+}

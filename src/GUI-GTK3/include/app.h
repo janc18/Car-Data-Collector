@@ -12,18 +12,14 @@ typedef struct _ObjectsUI ObjectsUI;
 
 struct _ObjectsUI {
   GtkWidget *Window;
-  GtkWidget *GXLevelBar;
-  GtkWidget *GXText;
-  GtkWidget *GYLevelBar;
-  GtkWidget *GYText;
-  GtkWidget *GZLevelBar;
-  GtkWidget *GZText;
-  GtkWidget *AccelXLevelBar;
-  GtkWidget *AccelXText;
-  GtkWidget *AccelYLevelBar;
-  GtkWidget *AccelYText;
-  GtkWidget *AccelZLevelBar;
-  GtkWidget *AccelZText;
+  GtkWidget *ProgressBarAX;
+  GtkWidget *ProgressBarAY;
+  GtkWidget *ProgressBarAZ;
+  GtkWidget *RangeCircle;
+  GtkWidget *DrawingAreaCenterCircle;
+  GdkPixbuf *imageCenterCircle;
+  gdouble x;
+  gdouble y;
 };
 
 typedef struct _CARAppPrivate CARAppPrivate;

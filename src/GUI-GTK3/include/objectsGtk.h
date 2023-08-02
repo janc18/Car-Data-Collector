@@ -6,3 +6,4 @@ void start_gui(void);
 ObjectsUI *buildObjects(GtkApplication *app);
 void signalsConnection(ObjectsUI *obj, CARApp *app);
 void freeElements(gpointer data);
+gboolean move_image(gpointer data);

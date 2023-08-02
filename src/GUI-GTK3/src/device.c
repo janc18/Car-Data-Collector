@@ -14,6 +14,7 @@
 #include "device.h"
 #include "app.h"
 #include "glibconfig.h"
+#include "objectsGtk.h"
 #include <fcntl.h>
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -103,12 +104,7 @@ void showDevInfo(Device *car) {
  *@param int32_t Raw value from the mpu
  *@param *GtkWidget Label Widget
  */
-void SetDataToBarAndText(GtkWidget *LevelBar, int32_t MpuValue, GtkWidget *LabelValue) {
-  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(LevelBar), MpuValue / 65535.0);
-  char Buffer[15];
-  snprintf(Buffer, sizeof(Buffer), "%d", MpuValue);
-  gtk_label_set_text(GTK_LABEL(LabelValue), Buffer);
-}
+void SetDataToProgressBar(GtkWidget *LevelBar, int32_t MpuValue) { gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(LevelBar), MpuValue / 65535.0); }
 
 /**
  * @brief Get data from the Driver with IOCTL commands and save in the car struct
@@ -139,15 +135,15 @@ gboolean UpdateVisualData(gpointer data) {
   Device *car = CAR_APP(app)->priv->device;
   GetDataFromDriverIOCTL(car);
   int32_t *pMpuValues[6] = {&car->mpu.GYRO_X, &car->mpu.GYRO_Y, &car->mpu.GYRO_Z, &car->mpu.ACCEL_X, &car->mpu.ACCEL_Y, &car->mpu.ACCEL_Z};
-  GtkWidget **Labels[6] = {&UI->GXText, &UI->GYText, &UI->GZText, &UI->AccelXText, &UI->AccelYText, &UI->AccelZText};
-  GtkWidget **LevelBar[6] = {&UI->GXLevelBar, &UI->GYLevelBar, &UI->GZLevelBar, &UI->AccelXLevelBar, &UI->AccelYLevelBar, &UI->AccelZLevelBar};
+  GtkWidget **LevelBar[3] = {&UI->ProgressBarAX, &UI->ProgressBarAY, &UI->ProgressBarAZ};
 #ifdef DEBUG
   showDevInfo(car);
   g_printerr("Triggered function \"UpdateVisualData\"\n");
 #endif
-  for (int i = 0; i < 6; i++) {
-    SetDataToBarAndText(*(LevelBar[i]), *(pMpuValues[i]), *(Labels[i]));
+  for (int i = 0; i < 3; i++) {
+    SetDataToProgressBar(*(LevelBar[i]), *(pMpuValues[i]));
   }
+  move_image(data);
   return TRUE;
 }
 
