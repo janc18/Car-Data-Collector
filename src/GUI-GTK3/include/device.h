@@ -40,4 +40,5 @@ int searchMpu6050Device(Device *mpu);
 void showDevInfo(Device *mpu);
 gboolean UpdateVisualData(gpointer data);
 int exponential_moving_average_filter(int new_data);
+gdouble mapToRange(gdouble value, gdouble minInput, gdouble maxInput, gdouble minOutput, gdouble maxOutput);
 #endif
