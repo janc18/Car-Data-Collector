@@ -19,6 +19,9 @@
 #include <gtk/gtk.h>
 const char pathGladeFile[] = "../gladeFiles/GUI_car_1.glade";
 
+const gdouble xOffset = 155;
+const gdouble yOffset = 210;
+
 /**
  * @brief Start gui
  * Load glade files
@@ -37,26 +40,38 @@ void start_gui(void) {
   g_object_unref(G_OBJECT(constructor));
   gtk_main();
 }
-
+/**
+ * @brief
+ */
 gboolean move_image(gpointer data) {
   CARApp *app = G_POINTER_TO_CAR_APP(data);
   ObjectsUI *UI = car_app_get_gui(app);
-
-  UI->x += 4;
-  g_printerr("move_image trigger");
+  Device *car = CAR_APP(app)->priv->device;
+  UI->x = mapToRange(car->mpu.GYRO_X, 35000, 35600, 30, 35);
+  UI->y = mapToRange(car->mpu.GYRO_Y, 35000, 35600, 30, 35);
+  gtk_widget_queue_draw(UI->DrawingAreaCenterCircle);
   return TRUE;
 }
-
+/**
+ * @brief
+ */
 gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
   CARApp *app = G_POINTER_TO_CAR_APP(data);
   ObjectsUI *UI = car_app_get_gui(app);
 
   if (UI->imageCenterCircle != NULL) {
+    g_printerr("x=%f y=%f\n", UI->x, UI->y);
     gdk_cairo_set_source_pixbuf(cr, UI->imageCenterCircle, UI->x, UI->y);
     cairo_paint(cr);
   }
 
-  return FALSE;
+  return TRUE;
+}
+
+gdouble mapToRange(gdouble value, gdouble minInput, gdouble maxInput, gdouble minOutput, gdouble maxOutput) {
+  double mappedValue = -1 + 2 * (value - minInput) / (maxInput - minInput);
+  double result = minOutput + (mappedValue + 1) * (maxOutput - minOutput) / 2;
+  return result;
 }
 
 /**
@@ -81,6 +96,8 @@ ObjectsUI *buildObjects(GtkApplication *app) {
   obj->DrawingAreaCenterCircle = GTK_WIDGET(gtk_builder_get_object(constructor, "CenterCircle"));
   gtk_image_set_from_file(GTK_IMAGE(obj->RangeCircle), "../src_images/RG.png");
   obj->imageCenterCircle = gdk_pixbuf_new_from_file("../src_images/CC.png", NULL);
+  obj->x = xOffset;
+  obj->y = yOffset;
   return obj;
   g_object_unref(G_OBJECT(constructor));
 }
