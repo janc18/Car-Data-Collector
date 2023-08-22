@@ -18,8 +18,13 @@ struct _ObjectsUI {
   GtkWidget *RangeCircle;
   GtkWidget *DrawingAreaCenterCircle;
   GdkPixbuf *imageCenterCircle;
-  gdouble x;
-  gdouble y;
+  GtkWidget *DrawingAreaTriangle;
+  GtkWidget *BarZaxis;
+  GdkPixbuf *imageTriangle;
+  gdouble x_circle;
+  gdouble y_circle;
+  gdouble x_triangle;
+  gdouble y_triangle;
 };
 
 typedef struct _CARAppPrivate CARAppPrivate;

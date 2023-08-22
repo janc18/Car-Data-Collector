@@ -144,6 +144,7 @@ gboolean UpdateVisualData(gpointer data) {
     SetDataToProgressBar(*(LevelBar[i]), *(pMpuValues[i]));
   }
   move_image(data);
+  move_triangle(data);
   return TRUE;
 }
 

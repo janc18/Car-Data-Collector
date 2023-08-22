@@ -47,9 +47,18 @@ gboolean move_image(gpointer data) {
   CARApp *app = G_POINTER_TO_CAR_APP(data);
   ObjectsUI *UI = car_app_get_gui(app);
   Device *car = CAR_APP(app)->priv->device;
-  UI->x = mapToRange(car->mpu.GYRO_X, 35000, 35600, 30, 35);
-  UI->y = mapToRange(car->mpu.GYRO_Y, 35000, 35600, 30, 35);
+  UI->x_circle = mapToRange(car->mpu.GYRO_X, 35000, 35600, 30, 35);
+  UI->y_circle = mapToRange(car->mpu.GYRO_Y, 35000, 35600, 30, 35);
   gtk_widget_queue_draw(UI->DrawingAreaCenterCircle);
+  return TRUE;
+}
+
+gboolean move_triangle(gpointer data){
+  CARApp *app = G_POINTER_TO_CAR_APP(data);
+  Device *car = CAR_APP(app)->priv->device;
+  ObjectsUI *UI = car_app_get_gui(app);
+  UI->x_triangle=mapToRange(car->mpu.GYRO_Z,35000,35600,30,35);
+  gtk_widget_queue_draw(UI->DrawingAreaTriangle);
   return TRUE;
 }
 /**
@@ -60,11 +69,23 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
   ObjectsUI *UI = car_app_get_gui(app);
 
   if (UI->imageCenterCircle != NULL) {
-    g_printerr("x=%f y=%f\n", UI->x, UI->y);
-    gdk_cairo_set_source_pixbuf(cr, UI->imageCenterCircle, UI->x, UI->y);
+    g_printerr("x=%f y=%f\n", UI->x_circle, UI->y_circle);
+    gdk_cairo_set_source_pixbuf(cr, UI->imageCenterCircle, UI->x_circle, UI->y_circle);
     cairo_paint(cr);
   }
+  return TRUE;
+}
 
+gboolean on_draw_triangle(GtkWidget *widget,cairo_t *cr, gpointer data){
+  CARApp *app =G_POINTER_TO_CAR_APP(data);
+  ObjectsUI *UI =car_app_get_gui(app);
+  if (UI->imageTriangle != NULL){
+    g_printerr("Triangle x=%f Triangle y=%f\n",UI->x_triangle,UI->y_triangle);
+    gdk_cairo_set_source_pixbuf(cr,UI->imageTriangle,UI->x_triangle,UI->y_triangle);
+    cairo_paint(cr);
+  }else{
+    g_printerr("error in triangle\n");
+  }
   return TRUE;
 }
 
@@ -94,10 +115,16 @@ ObjectsUI *buildObjects(GtkApplication *app) {
   obj->ProgressBarAZ = GTK_WIDGET(gtk_builder_get_object(constructor, "ProgressBarAZ"));
   obj->RangeCircle = GTK_WIDGET(gtk_builder_get_object(constructor, "RangeCircle"));
   obj->DrawingAreaCenterCircle = GTK_WIDGET(gtk_builder_get_object(constructor, "CenterCircle"));
+  obj->DrawingAreaTriangle=GTK_WIDGET(gtk_builder_get_object(constructor,"Triangle"));
+  obj->BarZaxis=GTK_WIDGET(gtk_builder_get_object(constructor,"Bar"));
+  gtk_image_set_from_file(GTK_IMAGE(obj->BarZaxis),"../src_images/Rectangle.png");
   gtk_image_set_from_file(GTK_IMAGE(obj->RangeCircle), "../src_images/RG.png");
   obj->imageCenterCircle = gdk_pixbuf_new_from_file("../src_images/CC.png", NULL);
-  obj->x = xOffset;
-  obj->y = yOffset;
+  obj->imageTriangle=gdk_pixbuf_new_from_file("../src_images/Triangle.png",NULL);
+  obj->x_circle = xOffset;  
+  obj->y_circle = yOffset;
+  obj->x_triangle=180;
+  obj->y_triangle=0;
   return obj;
   g_object_unref(G_OBJECT(constructor));
 }
@@ -132,4 +159,5 @@ void signalsConnection(ObjectsUI *obj, CARApp *app) {
   ObjectsUI *UI = car_app_get_gui(app);
   g_signal_connect_swapped(obj->Window, "destroy", G_CALLBACK(freeElements), app);
   g_signal_connect(obj->DrawingAreaCenterCircle, "draw", G_CALLBACK(on_draw), app);
+  g_signal_connect(obj->DrawingAreaTriangle,"draw",G_CALLBACK(on_draw_triangle),app);
 }

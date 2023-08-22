@@ -7,5 +7,7 @@ ObjectsUI *buildObjects(GtkApplication *app);
 void signalsConnection(ObjectsUI *obj, CARApp *app);
 void freeElements(gpointer data);
 gboolean move_image(gpointer data);
+gboolean move_triangle(gpointer data);
+gboolean on_draw_triangle(GtkWidget *widget,cairo_t *cr, gpointer data);
 gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data); 
 
