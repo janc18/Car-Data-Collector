@@ -288,7 +288,7 @@
                     <property name="margin-bottom">4</property>
                     <property name="spacing">10</property>
                     <child>
-                      <object class="GtkButton">
+                      <object class="GtkButton" id="TestDeviceButton">
                         <property name="label" translatable="yes">Test Device</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
@@ -313,7 +313,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel">
+                      <object class="GtkLabel" id="DeviceStatusMainWindowText">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="halign">end</property>
@@ -352,7 +352,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel">
+                      <object class="GtkLabel" id="GUIVersionText">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">0.0</property>
@@ -388,7 +388,6 @@
     </child>
   </object>
   <object class="GtkApplicationWindow">
-    <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="default-width">500</property>
     <property name="default-height">300</property>
@@ -461,7 +460,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel">
+                      <object class="GtkLabel" id="DeviceStatusText">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Disconnected</property>
@@ -499,7 +498,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel">
+                      <object class="GtkLabel" id="DriverVersionText">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">0.0</property>
@@ -570,7 +569,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton">
+                      <object class="GtkButton" id="StartTestButton">
                         <property name="label" translatable="yes">Start Test</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
@@ -609,7 +608,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkProgressBar">
+                      <object class="GtkProgressBar" id="AnalysisProgressBar">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="valign">center</property>
@@ -653,7 +652,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel">
+                  <object class="GtkLabel" id="AutomaticTestCountdownText">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">0</property>
@@ -689,7 +688,7 @@
             <property name="spacing">11</property>
             <property name="homogeneous">True</property>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="SaveAndStartAppButton">
                 <property name="label" translatable="yes">Save and Start App</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
@@ -702,7 +701,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="LoadMpuConfigButton">
                 <property name="label" translatable="yes">Load MPU config</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
@@ -715,7 +714,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="ExitTestButton">
                 <property name="label" translatable="yes">Exit</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
