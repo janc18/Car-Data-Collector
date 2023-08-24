@@ -63,7 +63,9 @@ int searchMpu6050Device(Device *mpu) {
   char buffer[256];
   char path[50];
   int fd, i;
+  #ifdef DEBUG
   g_printerr("Searching for Device\n");
+  #endif
   fd = open(DevicePath, O_RDWR);
   if (fd > 0) {
     mpu->found = true;
