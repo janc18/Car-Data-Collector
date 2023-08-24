@@ -22,6 +22,7 @@ struct _ObjectsUI {
   GtkWidget *BarZaxis;
   GdkPixbuf *imageTriangle;
   GtkWidget *WindowTest;
+  GtkWidget *RootDialog;
   GtkWidget *DeviceStatusText;
   GtkWidget *DriverVersionText;
   GtkWidget *StartTestButton;
