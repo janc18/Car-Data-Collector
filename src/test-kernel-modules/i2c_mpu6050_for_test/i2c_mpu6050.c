@@ -34,6 +34,9 @@ MODULE_DESCRIPTION("A test driver for reading out a MPU6050");
 #define AX _IOR('a', 'd', int16_t *)
 #define AY _IOR('a', 'e', int16_t *)
 #define AZ _IOR('a', 'f', int16_t *)
+#define VERSION _IOR('a','v', int8_t *)
+
+const int8_t VERSION_NUMBER=1;
 
 // MPU6050 registers
 const u8 MPU6050_SLAVE_ADDRESS = 0x68;
@@ -62,7 +65,7 @@ typedef struct RawMpuValues {
 } RawMpuValues;
 
 // Range values to test the gui behavior
-unsigned int max_value =15000; 
+unsigned int max_value =32000; 
 unsigned int min_value =32000; 
 
 RawMpuValues mpu = {0, 0, 0, 0, 0, 0};
@@ -135,6 +138,11 @@ static long etx_ioctl(struct file *file, unsigned int cmd, unsigned long arg) {
     break;
   case AZ:
     get_raw_value(arg, &mpu.ACCEL_Z, 63);
+    break;
+  case VERSION:
+  if(copy_to_user((u8 *)arg, &VERSION_NUMBER, sizeof(u8))){
+    pr_err("Data Read : Err!\n");
+  }
     break;
 
   default:
