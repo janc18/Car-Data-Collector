@@ -15,13 +15,19 @@
 
 #include "objectsGtk.h"
 #include "app.h"
+#include "device.h"
 #include <cairo.h>
 #include <gtk/gtk.h>
+#include <sys/ioctl.h>
+
 const char pathGladeFile[] = "../gladeFiles/GUI_car_1.glade";
 
-const gdouble xOffset = 155;
-const gdouble yOffset = 210;
+const gchar GUI_VERSION[]="1.0";
 
+const gdouble xOffset = 155;
+const gdouble yOffset = 195;
+
+const gint8 SecondsToStartAutomaticTest =5;
 /**
  * @brief Start gui
  * Load glade files
@@ -69,7 +75,9 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
   ObjectsUI *UI = car_app_get_gui(app);
 
   if (UI->imageCenterCircle != NULL) {
+    #ifdef DEBUG
     g_printerr("x=%f y=%f\n", UI->x_circle, UI->y_circle);
+    #endif
     gdk_cairo_set_source_pixbuf(cr, UI->imageCenterCircle, UI->x_circle, UI->y_circle);
     cairo_paint(cr);
   }
@@ -80,7 +88,9 @@ gboolean on_draw_triangle(GtkWidget *widget,cairo_t *cr, gpointer data){
   CARApp *app =G_POINTER_TO_CAR_APP(data);
   ObjectsUI *UI =car_app_get_gui(app);
   if (UI->imageTriangle != NULL){
+    #ifdef DEBUG
     g_printerr("Triangle x=%f Triangle y=%f\n",UI->x_triangle,UI->y_triangle);
+    #endif
     gdk_cairo_set_source_pixbuf(cr,UI->imageTriangle,UI->x_triangle,UI->y_triangle);
     cairo_paint(cr);
   }else{
@@ -93,6 +103,24 @@ gdouble mapToRange(gdouble value, gdouble minInput, gdouble maxInput, gdouble mi
   double mappedValue = -1 + 2 * (value - minInput) / (maxInput - minInput);
   double result = minOutput + (mappedValue + 1) * (maxOutput - minOutput) / 2;
   return result;
+}
+
+void open_test_window(GtkWidget *,gpointer data){
+CARApp *app = G_POINTER_TO_CAR_APP(data);
+ObjectsUI *UI = car_app_get_gui(app);
+Device *car = CAR_APP(app)->priv->device;
+gtk_widget_show_all(UI->WindowTest);
+//If device found start countdown
+if (car->found==TRUE){
+  gtk_label_set_text(GTK_LABEL(UI->DeviceStatusText),"Connected");
+  int8_t VersionNumber=10;
+  ioctl(car->fd,VERSION,&VersionNumber);
+  char *number_str = g_strdup_printf("%d", VersionNumber);
+  gtk_label_set_text(GTK_LABEL(UI->DriverVersionText),number_str);
+  }else{
+  gtk_label_set_text(GTK_LABEL(UI->DeviceStatusText),"Disconnected");
+}
+  //g_signal_connect(GTK_WINDOW(UI->WindowTest), "destroy",NULL,NULL);
 }
 
 /**
@@ -110,6 +138,7 @@ ObjectsUI *buildObjects(GtkApplication *app) {
   // Windows
   obj->Window = GTK_WIDGET(gtk_builder_get_object(constructor, "Window"));
   obj->WindowTest = GTK_WIDGET(gtk_builder_get_object(constructor,"WindowTest"));
+  obj->RootDialog=GTK_WIDGET(gtk_builder_get_object(constructor,"RootDialog"));
   // ************************************************
 
   // Text that can be updated
@@ -146,6 +175,10 @@ ObjectsUI *buildObjects(GtkApplication *app) {
   obj->imageTriangle=gdk_pixbuf_new_from_file("../src_images/Triangle.png",NULL);
   // ************************************************
 
+  // Gui Version
+  gtk_label_set_text(GTK_LABEL(obj->GUIVersionText),(gchar *)GUI_VERSION);
+  // ************************************************
+  
   // X & Y coordinates for the Center circle and a bar represent the Z axis movement
   obj->x_circle = xOffset;  
   obj->y_circle = yOffset;
@@ -166,7 +199,6 @@ void freeElements(gpointer data) {
   CARApp *app = G_POINTER_TO_CAR_APP(data);
   ObjectsUI *UI = car_app_get_gui(app);
   Device *car = CAR_APP(app)->priv->device;
-
 #ifdef DEBUG
   g_printerr("%p UI\n", UI);
   g_printerr("%p device\n", car);
@@ -187,4 +219,5 @@ void signalsConnection(ObjectsUI *obj, CARApp *app) {
   g_signal_connect_swapped(obj->Window, "destroy", G_CALLBACK(freeElements), app);
   g_signal_connect(obj->DrawingAreaCenterCircle, "draw", G_CALLBACK(on_draw), app);
   g_signal_connect(obj->DrawingAreaTriangle,"draw",G_CALLBACK(on_draw_triangle),app);
+  g_signal_connect(obj->TestDeviceButton,"clicked",G_CALLBACK(open_test_window),app);
 }
