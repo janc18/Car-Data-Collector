@@ -21,6 +21,18 @@ struct _ObjectsUI {
   GtkWidget *DrawingAreaTriangle;
   GtkWidget *BarZaxis;
   GdkPixbuf *imageTriangle;
+  GtkWidget *WindowTest;
+  GtkWidget *DeviceStatusText;
+  GtkWidget *DriverVersionText;
+  GtkWidget *StartTestButton;
+  GtkWidget *AnalysisProgressBar;
+  GtkWidget *AutomaticTestCountdownText;
+  GtkWidget *SaveAndStartAppButton;
+  GtkWidget *LoadMpuConfigButton;
+  GtkWidget *ExitTestButton;
+  GtkWidget *DeviceStatusMainWindowText;
+  GtkWidget *GUIVersionText;
+  GtkWidget *TestDeviceButton;
   gdouble x_circle;
   gdouble y_circle;
   gdouble x_triangle;

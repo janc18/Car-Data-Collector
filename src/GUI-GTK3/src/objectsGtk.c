@@ -107,12 +107,35 @@ ObjectsUI *buildObjects(GtkApplication *app) {
 #ifdef DEBUG
   g_printerr("UI %p \n", obj);
 #endif
-
+  // Windows
   obj->Window = GTK_WIDGET(gtk_builder_get_object(constructor, "Window"));
+  obj->WindowTest = GTK_WIDGET(gtk_builder_get_object(constructor,"WindowTest"));
+  // ************************************************
 
+  // Text that can be updated
+  obj->DeviceStatusText = GTK_WIDGET(gtk_builder_get_object(constructor,"DeviceStatusText"));
+  obj->DriverVersionText= GTK_WIDGET(gtk_builder_get_object(constructor,"DriverVersionText"));
+  obj->AutomaticTestCountdownText=GTK_WIDGET(gtk_builder_get_object(constructor,"AutomaticTestCountdownText"));
+  obj->DeviceStatusMainWindowText=GTK_WIDGET(gtk_builder_get_object(constructor,"DeviceStatusMainWindowText"));
+  obj->GUIVersionText=GTK_WIDGET(gtk_builder_get_object(constructor,"GUIVersionText"));
+  // ************************************************
+
+  // Buttons
+  obj-> StartTestButton=GTK_WIDGET(gtk_builder_get_object(constructor,"StartTestButton"));
+  obj-> SaveAndStartAppButton=GTK_WIDGET(gtk_builder_get_object(constructor,"SaveAndStartAppButton"));
+  obj-> LoadMpuConfigButton=GTK_WIDGET(gtk_builder_get_object(constructor,"LoadMpuConfigButton"));
+  obj-> ExitTestButton=GTK_WIDGET(gtk_builder_get_object(constructor,"ExitTestButtonl"));
+  obj-> TestDeviceButton=GTK_WIDGET(gtk_builder_get_object(constructor,"TestDeviceButton"));
+  //**************************************************
+
+  // Progress Bars
   obj->ProgressBarAX = GTK_WIDGET(gtk_builder_get_object(constructor, "ProgressBarAX"));
   obj->ProgressBarAY = GTK_WIDGET(gtk_builder_get_object(constructor, "ProgressBarAY"));
   obj->ProgressBarAZ = GTK_WIDGET(gtk_builder_get_object(constructor, "ProgressBarAZ"));
+  obj->AnalysisProgressBar = GTK_WIDGET(gtk_builder_get_object(constructor,"AnalysisProgressBar"));
+  // ************************************************
+
+  // Objects related to the movement of the Gyroscope 
   obj->RangeCircle = GTK_WIDGET(gtk_builder_get_object(constructor, "RangeCircle"));
   obj->DrawingAreaCenterCircle = GTK_WIDGET(gtk_builder_get_object(constructor, "CenterCircle"));
   obj->DrawingAreaTriangle=GTK_WIDGET(gtk_builder_get_object(constructor,"Triangle"));
@@ -121,10 +144,14 @@ ObjectsUI *buildObjects(GtkApplication *app) {
   gtk_image_set_from_file(GTK_IMAGE(obj->RangeCircle), "../src_images/RG.png");
   obj->imageCenterCircle = gdk_pixbuf_new_from_file("../src_images/CC.png", NULL);
   obj->imageTriangle=gdk_pixbuf_new_from_file("../src_images/Triangle.png",NULL);
+  // ************************************************
+
+  // X & Y coordinates for the Center circle and a bar represent the Z axis movement
   obj->x_circle = xOffset;  
   obj->y_circle = yOffset;
   obj->x_triangle=180;
   obj->y_triangle=0;
+  // ************************************************
   return obj;
   g_object_unref(G_OBJECT(constructor));
 }
