@@ -11,6 +11,7 @@
 #define AX _IOR('a', 'd', int16_t *)
 #define AY _IOR('a', 'e', int16_t *)
 #define AZ _IOR('a', 'f', int16_t *)
+#define VERSION _IOR('a','v',int8_t *)
 
 typedef struct RawMpuValues {
   int32_t ACCEL_X;
@@ -32,7 +33,7 @@ typedef struct Device {
   int fd;
   char path[50];
   bool found;
-  guint32 version;
+  guint8 version;
   RawMpuValues mpu;
 } Device;
 
