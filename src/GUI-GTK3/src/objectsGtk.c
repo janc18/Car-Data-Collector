@@ -105,6 +105,17 @@ gdouble mapToRange(gdouble value, gdouble minInput, gdouble maxInput, gdouble mi
   return result;
 }
 
+void close_test_window(GtkWidget *,gpointer data){
+CARApp *app = G_POINTER_TO_CAR_APP(data);
+ObjectsUI *UI = car_app_get_gui(app);
+gtk_widget_destroy(UI->WindowTest);
+}
+void close_message(GtkWidget *,gpointer data){
+CARApp *app = G_POINTER_TO_CAR_APP(data);
+ObjectsUI *UI = car_app_get_gui(app);
+gtk_widget_destroy(UI->RootDialog);
+}
+
 void open_test_window(GtkWidget *,gpointer data){
 CARApp *app = G_POINTER_TO_CAR_APP(data);
 ObjectsUI *UI = car_app_get_gui(app);
@@ -120,7 +131,6 @@ if (car->found==TRUE){
   }else{
   gtk_label_set_text(GTK_LABEL(UI->DeviceStatusText),"Disconnected");
 }
-  //g_signal_connect(GTK_WINDOW(UI->WindowTest), "destroy",NULL,NULL);
 }
 
 /**
@@ -153,8 +163,10 @@ ObjectsUI *buildObjects(GtkApplication *app) {
   obj-> StartTestButton=GTK_WIDGET(gtk_builder_get_object(constructor,"StartTestButton"));
   obj-> SaveAndStartAppButton=GTK_WIDGET(gtk_builder_get_object(constructor,"SaveAndStartAppButton"));
   obj-> LoadMpuConfigButton=GTK_WIDGET(gtk_builder_get_object(constructor,"LoadMpuConfigButton"));
-  obj-> ExitTestButton=GTK_WIDGET(gtk_builder_get_object(constructor,"ExitTestButtonl"));
+  obj-> ExitTestButton=GTK_WIDGET(gtk_builder_get_object(constructor,"ExitTestButton"));
   obj-> TestDeviceButton=GTK_WIDGET(gtk_builder_get_object(constructor,"TestDeviceButton"));
+  obj->AcceptDialogButton=GTK_WIDGET(gtk_builder_get_object(constructor,"AcceptDialogButton"));
+  obj->ExitDialogButton=GTK_WIDGET(gtk_builder_get_object(constructor,"ExitDialogButton"));
   //**************************************************
 
   // Progress Bars
@@ -220,4 +232,7 @@ void signalsConnection(ObjectsUI *obj, CARApp *app) {
   g_signal_connect(obj->DrawingAreaCenterCircle, "draw", G_CALLBACK(on_draw), app);
   g_signal_connect(obj->DrawingAreaTriangle,"draw",G_CALLBACK(on_draw_triangle),app);
   g_signal_connect(obj->TestDeviceButton,"clicked",G_CALLBACK(open_test_window),app);
+  g_signal_connect(obj->AcceptDialogButton,"clicked",G_CALLBACK(close_message),app);
+  g_signal_connect(UI->ExitTestButton,"clicked",G_CALLBACK(close_test_window),app);
+  g_signal_connect_swapped(obj->ExitDialogButton,"clicked",G_CALLBACK(freeElements),app);
 }
