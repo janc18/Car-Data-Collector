@@ -31,17 +31,18 @@ static void car_app_activate(GApplication *app) {
   #ifdef DEBUG
   g_printerr(device->found ? "Device found\n" : "Device not found\n");
   #endif
-  if (device->found)
+  
+  if (getuid()!=0){
+    gtk_widget_show_all(UI->RootDialog);
+  }
+  
+if (device->found)
   {
       gtk_label_set_text(GTK_LABEL(UI->DeviceStatusMainWindowText),"Connected");
   }else{
       gtk_label_set_text(GTK_LABEL(UI->DeviceStatusMainWindowText),"Disconnected");
   }
 
-  if (getuid()!=0){
-    gtk_widget_show_all(UI->RootDialog);
-  }
-  
   signalsConnection(UI, CAR_APP(app));
   CAR_APP(app)->priv->device = device;
   if (device->found) {
