@@ -34,6 +34,7 @@ typedef struct Device {
   char path[50];
   bool found;
   guint8 version;
+  guint timer_countdown;
   RawMpuValues mpu;
 } Device;
 
