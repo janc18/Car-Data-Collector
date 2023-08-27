@@ -29,7 +29,6 @@ const gchar GUI_VERSION[]="1.0";
 const gdouble xOffset = 155;
 const gdouble yOffset = 195;
 
-const gint8 SecondsToStartAutomaticTest =5;
 /**
  * @brief Start gui
  * Load glade files
