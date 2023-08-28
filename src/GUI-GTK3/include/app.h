@@ -36,6 +36,9 @@ struct _ObjectsUI {
   GtkWidget *DeviceStatusMainWindowText;
   GtkWidget *GUIVersionText;
   GtkWidget *TestDeviceButton;
+  GtkWidget *OutputStatusTest;
+  GtkTextBuffer *buffer;
+  GtkTextIter iter;
   gdouble x_circle;
   gdouble y_circle;
   gdouble x_triangle;
