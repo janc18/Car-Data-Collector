@@ -15,8 +15,8 @@
 
 #include "objectsGtk.h"
 #include "app.h"
-#include "drawing.h"
 #include "device.h"
+#include "drawing.h"
 #include "windows.h"
 #include <cairo.h>
 #include <gtk/gtk.h>
@@ -24,7 +24,7 @@
 
 const char pathGladeFile[] = "../gladeFiles/GUI_car_1.glade";
 
-const gchar GUI_VERSION[]="1.0";
+const gchar GUI_VERSION[] = "1.0";
 
 const gdouble xOffset = 155;
 const gdouble yOffset = 195;
@@ -68,55 +68,59 @@ ObjectsUI *buildObjects(GtkApplication *app) {
 #endif
   // Windows
   obj->Window = GTK_WIDGET(gtk_builder_get_object(constructor, "Window"));
-  obj->WindowTest = GTK_WIDGET(gtk_builder_get_object(constructor,"WindowTest"));
-  obj->RootDialog=GTK_WIDGET(gtk_builder_get_object(constructor,"RootDialog"));
+  obj->WindowTest = GTK_WIDGET(gtk_builder_get_object(constructor, "WindowTest"));
+  obj->RootDialog = GTK_WIDGET(gtk_builder_get_object(constructor, "RootDialog"));
   // ************************************************
 
   // Text that can be updated
-  obj->DeviceStatusText = GTK_WIDGET(gtk_builder_get_object(constructor,"DeviceStatusText"));
-  obj->DriverVersionText= GTK_WIDGET(gtk_builder_get_object(constructor,"DriverVersionText"));
-  obj->AutomaticTestCountdownText=GTK_WIDGET(gtk_builder_get_object(constructor,"AutomaticTestCountdownText"));
-  obj->DeviceStatusMainWindowText=GTK_WIDGET(gtk_builder_get_object(constructor,"DeviceStatusMainWindowText"));
-  obj->GUIVersionText=GTK_WIDGET(gtk_builder_get_object(constructor,"GUIVersionText"));
+  obj->DeviceStatusText = GTK_WIDGET(gtk_builder_get_object(constructor, "DeviceStatusText"));
+  obj->DriverVersionText = GTK_WIDGET(gtk_builder_get_object(constructor, "DriverVersionText"));
+  obj->AutomaticTestCountdownText = GTK_WIDGET(gtk_builder_get_object(constructor, "AutomaticTestCountdownText"));
+  obj->DeviceStatusMainWindowText = GTK_WIDGET(gtk_builder_get_object(constructor, "DeviceStatusMainWindowText"));
+  obj->GUIVersionText = GTK_WIDGET(gtk_builder_get_object(constructor, "GUIVersionText"));
   // ************************************************
 
   // Buttons
-  obj-> StartTestButton=GTK_WIDGET(gtk_builder_get_object(constructor,"StartTestButton"));
-  obj-> SaveAndStartAppButton=GTK_WIDGET(gtk_builder_get_object(constructor,"SaveAndStartAppButton"));
-  obj-> LoadMpuConfigButton=GTK_WIDGET(gtk_builder_get_object(constructor,"LoadMpuConfigButton"));
-  obj-> ExitTestButton=GTK_WIDGET(gtk_builder_get_object(constructor,"ExitTestButton"));
-  obj-> TestDeviceButton=GTK_WIDGET(gtk_builder_get_object(constructor,"TestDeviceButton"));
-  obj->AcceptDialogButton=GTK_WIDGET(gtk_builder_get_object(constructor,"AcceptDialogButton"));
-  obj->ExitDialogButton=GTK_WIDGET(gtk_builder_get_object(constructor,"ExitDialogButton"));
+  obj->StartTestButton = GTK_WIDGET(gtk_builder_get_object(constructor, "StartTestButton"));
+  obj->SaveAndStartAppButton = GTK_WIDGET(gtk_builder_get_object(constructor, "SaveAndStartAppButton"));
+  obj->LoadMpuConfigButton = GTK_WIDGET(gtk_builder_get_object(constructor, "LoadMpuConfigButton"));
+  obj->ExitTestButton = GTK_WIDGET(gtk_builder_get_object(constructor, "ExitTestButton"));
+  obj->TestDeviceButton = GTK_WIDGET(gtk_builder_get_object(constructor, "TestDeviceButton"));
+  obj->AcceptDialogButton = GTK_WIDGET(gtk_builder_get_object(constructor, "AcceptDialogButton"));
+  obj->ExitDialogButton = GTK_WIDGET(gtk_builder_get_object(constructor, "ExitDialogButton"));
   //**************************************************
 
   // Progress Bars
   obj->ProgressBarAX = GTK_WIDGET(gtk_builder_get_object(constructor, "ProgressBarAX"));
   obj->ProgressBarAY = GTK_WIDGET(gtk_builder_get_object(constructor, "ProgressBarAY"));
   obj->ProgressBarAZ = GTK_WIDGET(gtk_builder_get_object(constructor, "ProgressBarAZ"));
-  obj->AnalysisProgressBar = GTK_WIDGET(gtk_builder_get_object(constructor,"AnalysisProgressBar"));
+  obj->AnalysisProgressBar = GTK_WIDGET(gtk_builder_get_object(constructor, "AnalysisProgressBar"));
   // ************************************************
 
-  // Objects related to the movement of the Gyroscope 
+  // Objects related to the movement of the Gyroscope
   obj->RangeCircle = GTK_WIDGET(gtk_builder_get_object(constructor, "RangeCircle"));
   obj->DrawingAreaCenterCircle = GTK_WIDGET(gtk_builder_get_object(constructor, "CenterCircle"));
-  obj->DrawingAreaTriangle=GTK_WIDGET(gtk_builder_get_object(constructor,"Triangle"));
-  obj->BarZaxis=GTK_WIDGET(gtk_builder_get_object(constructor,"Bar"));
-  gtk_image_set_from_file(GTK_IMAGE(obj->BarZaxis),"../src_images/Rectangle.png");
+  obj->DrawingAreaTriangle = GTK_WIDGET(gtk_builder_get_object(constructor, "Triangle"));
+  obj->BarZaxis = GTK_WIDGET(gtk_builder_get_object(constructor, "Bar"));
+  gtk_image_set_from_file(GTK_IMAGE(obj->BarZaxis), "../src_images/Rectangle.png");
   gtk_image_set_from_file(GTK_IMAGE(obj->RangeCircle), "../src_images/RG.png");
   obj->imageCenterCircle = gdk_pixbuf_new_from_file("../src_images/CC.png", NULL);
-  obj->imageTriangle=gdk_pixbuf_new_from_file("../src_images/Triangle.png",NULL);
+  obj->imageTriangle = gdk_pixbuf_new_from_file("../src_images/Triangle.png", NULL);
   // ************************************************
 
   // Gui Version
-  gtk_label_set_text(GTK_LABEL(obj->GUIVersionText),(gchar *)GUI_VERSION);
+  gtk_label_set_text(GTK_LABEL(obj->GUIVersionText), (gchar *)GUI_VERSION);
   // ************************************************
-  
+
+  // TextView
+  obj->OutputStatusTest = GTK_WIDGET(gtk_builder_get_object(constructor, "OutputStatusTest"));
+  // ***********************************************
+
   // X & Y coordinates for the Center circle and a bar represent the Z axis movement
-  obj->x_circle = xOffset;  
+  obj->x_circle = xOffset;
   obj->y_circle = yOffset;
-  obj->x_triangle=180;
-  obj->y_triangle=0;
+  obj->x_triangle = 180;
+  obj->y_triangle = 0;
   // ************************************************
   return obj;
   g_object_unref(G_OBJECT(constructor));
@@ -151,9 +155,10 @@ void signalsConnection(ObjectsUI *obj, CARApp *app) {
   ObjectsUI *UI = car_app_get_gui(app);
   g_signal_connect_swapped(obj->Window, "destroy", G_CALLBACK(freeElements), app);
   g_signal_connect(obj->DrawingAreaCenterCircle, "draw", G_CALLBACK(on_draw), app);
-  g_signal_connect(obj->DrawingAreaTriangle,"draw",G_CALLBACK(on_draw_triangle),app);
-  g_signal_connect(obj->TestDeviceButton,"clicked",G_CALLBACK(open_test_window),app);
-  g_signal_connect(obj->AcceptDialogButton,"clicked",G_CALLBACK(close_message),app);
-  g_signal_connect(UI->ExitTestButton,"clicked",G_CALLBACK(close_test_window),app);
-  g_signal_connect_swapped(obj->ExitDialogButton,"clicked",G_CALLBACK(freeElements),app);
+  g_signal_connect(obj->DrawingAreaTriangle, "draw", G_CALLBACK(on_draw_triangle), app);
+  g_signal_connect(obj->TestDeviceButton, "clicked", G_CALLBACK(open_test_window), app);
+  g_signal_connect(obj->AcceptDialogButton, "clicked", G_CALLBACK(close_message), app);
+  g_signal_connect(UI->ExitTestButton, "clicked", G_CALLBACK(close_test_window), app);
+  g_signal_connect_swapped(UI->StartTestButton, "clicked", G_CALLBACK(starting_test), app);
+  g_signal_connect_swapped(obj->ExitDialogButton, "clicked", G_CALLBACK(freeElements), app);
 }
